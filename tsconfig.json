@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowSyntheticDefaultImports": true,
+    "lib": ["esnext"],
+    "outDir": "dist",
+    "types": ["@cloudflare/workers-types", "node"],
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules/**"
+  ]
+}
