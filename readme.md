@@ -6,7 +6,7 @@ This middleware generates and inserts nonce values into `script`/`style`/`link` 
 
 ```typescript
 // In functions/_middleware.ts/js:
-import {getNonceMiddleware, ContentSecurityPolicy} from "nonce-sense";
+import {getNonceMiddleware, ContentSecurityPolicy} from "csp-nonce-sense";
 
 const baseCsp: ContentSecurityPolicy = {
 ...

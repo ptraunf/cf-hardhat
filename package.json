@@ -1,17 +1,18 @@
 {
-  "name": "nonce-sense",
+  "name": "csp-nonce-sense",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ts-node test/index.test.ts"
   },
   "author": "",
-  "license": "ISC",
-  "description": "",
+  "description": "This middleware generates and inserts matching nonce values into HTML script/style tags and CSP directives",
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240821.1",
     "@types/node": "^22.5.0",
+    "csp_evaluator": "^1.1.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   }
 }
