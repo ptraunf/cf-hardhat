@@ -6,13 +6,17 @@ This middleware generates and inserts nonce values into `script`/`style`/`link` 
 
 ```typescript
 // In functions/_middleware.ts/js:
-import {getNonceMiddleware, ContentSecurityPolicy} from "csp-nonce-sense";
+import {CspOptions, getNonceSense} from "csp-nonce-sense";
 
-const baseCsp: ContentSecurityPolicy = {
-...
+const cspOpts: CspOptions = {
+    nonceTags: ["script", "style"], // script, style, and link are default nonce tags.
+    basePolicies: {
+        'frame-src': [ "'none'" ],
+        ...   
+    }
 };
 
-const nonceMiddleware = getNonceMiddleware(baseCsp);
+const nonceMiddleware = getNonceSense(cspOpts);
 
 export const onRequest = [..., nonceMiddleware, ...];
 ```
@@ -42,4 +46,4 @@ Then only `script` elements having a `nonce` attribute with the same `randomBase
 ```
 
 
-https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src
+See more at [Mozilla Developer docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src)
