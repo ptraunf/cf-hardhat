@@ -9,10 +9,14 @@
     "allowSyntheticDefaultImports": true,
     "lib": ["esnext"],
     "outDir": "dist",
-    "types": ["@cloudflare/workers-types", "node"],
+    "types": ["@cloudflare/workers-types", "node", "jest"],
     "skipLibCheck": true
   },
   "include": [
     "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "jest.config.ts"
   ]
 }

@@ -1,49 +1,99 @@
 import {CspParser} from "csp_evaluator/dist/parser";
-import {Directive} from "csp_evaluator/dist/csp"
-import {CspEvaluator} from "csp_evaluator/dist/evaluator";
+import {Csp, Directive} from "csp_evaluator/dist/csp"
 import {CspOptions, CspDirective, ContentSecurityPolicy} from "../src/index"
 
-(function testCspToString() {
+
+test('CSP can build from initial options', () => {
     const cspOpts: CspOptions = {
         basePolicies: {
-            defaultSrc: ["'self'"],
-            fontSrc: [
+            'default-src': ["'self'"],
+            'font-src': [
                 "'self'",
-                "https://cdnjs.cloudflare.com"
+                "https://allowed.font.src.com"
             ],
-            imgSrc: ["'self'", "data:"],
-            frameSrc: [
+            'img-src': ["'self'", "data:"],
+            'frame-src': [
                 "'self'",
-                "https://challenges.cloudflare.com",
-                "https://clickjack-attack.pages.dev"
+                "https://allowed.frame.src.com",
             ],
-            objectSrc: ["'none'"],
-            baseUri: ["'self'"]
+            'object-src': ["'none'"],
+            'base-uri': ["'self'"]
+        }
+    };
+
+    const csp = new ContentSecurityPolicy(cspOpts);
+    expect(csp).toBeTruthy();
+});
+test('CSP toString produces parseable CSP', () => {
+    const cspOpts: CspOptions = {
+        basePolicies: {
+            'default-src': ["'self'"],
+            'font-src': [
+                "'self'",
+                "https://allowed.font.src.com"
+            ],
+            'img-src': ["'self'", "data:"],
+            'frame-src': [
+                "'self'",
+                "https://allowed.frame.src.com",
+            ],
+            'object-src': ["'none'"],
+            'base-uri': ["'self'"]
         }
     };
     const csp = new ContentSecurityPolicy(cspOpts);
     const cspString = csp.toString()
-    let parsed = new CspParser(cspString).csp
-    const findings = new CspEvaluator(parsed).evaluate();
-    console.log(cspString)
-    console.log(findings)
-})();
-(function testCspUseNonce() {
+    const parsed = new CspParser(cspString).csp
+    expect(parsed).toBeTruthy();
+});
+
+test('CSP toString includes all the specified policies', () => {
+    const expectedCspPolicies = [
+        "default-src 'self'",
+        "font-src 'self' https://allowed.font.src.com",
+        "img-src 'self' data:",
+        "frame-src 'self' https://allowed.frame.src.com",
+        "object-src 'none'",
+        "base-uri 'self'"];
     const cspOpts: CspOptions = {
         basePolicies: {
-            defaultSrc: ["'self'"],
-            fontSrc: [
+            'default-src': ["'self'"],
+            'font-src': [
                 "'self'",
-                "https://cdnjs.cloudflare.com"
+                "https://allowed.font.src.com"
             ],
-            imgSrc: ["'self'", "data:"],
-            frameSrc: [
+            'img-src': ["'self'", "data:"],
+            'frame-src': [
                 "'self'",
-                "https://challenges.cloudflare.com",
-                "https://clickjack-attack.pages.dev"
+                "https://allowed.frame.src.com",
             ],
-            objectSrc: ["'none'"],
-            baseUri: ["'self'"]
+            'object-src': ["'none'"],
+            'base-uri': ["'self'"]
+        }
+    };
+    const csp = new ContentSecurityPolicy(cspOpts);
+    const cspString = csp.toString()
+    for (const expectedPolicy of expectedCspPolicies) {
+
+        expect(cspString.split(";").map(s => s.trim())).toContain(expectedPolicy);
+    }
+});
+
+test('useNonce inserts nonce into CSP', () => {
+    const cspOpts: CspOptions = {
+        basePolicies: {
+            'default-src': ["'self'"],
+            [CspDirective.fontSrc]: [
+                "'self'",
+                "https://allowed.font.src.com"
+            ],
+            [CspDirective.imgSrc]: ["'self'", "data:"],
+            'frame-src': [
+                "'self'",
+                "https://allowed.frame.src.com",
+            ],
+            'object-src': ["'none'"],
+            'base-uri': ["'self'"]
         }
     };
     const csp = new ContentSecurityPolicy(cspOpts);
@@ -52,56 +102,27 @@ import {CspOptions, CspDirective, ContentSecurityPolicy} from "../src/index"
     csp.useNonce(CspDirective.styleSrc, nonce);
     const cspString = csp.toString()
     let parsed = new CspParser(cspString).csp
-    if (!parsed.policyHasScriptNonces(Directive.SCRIPT_SRC)) {
-        throw Error("Expected script-src to have nonce")
-    }
-    if (!parsed.policyHasScriptNonces(Directive.STYLE_SRC)) {
-        throw Error("Expected style-src to have nonce")
-    }
-    const findings = new CspEvaluator(parsed).evaluate();
-    console.log(cspString)
-    console.log(findings)
-})();
+    expect(parsed.policyHasScriptNonces(Directive.SCRIPT_SRC)).toBe(true);
+    expect(parsed.policyHasScriptNonces(Directive.STYLE_SRC)).toBe(true);
+});
 
-(function testCspUseNonceWithBasePolicies() {
+test('useNonce retains initial script-src and style-src policies specified', () => {
     const cspOpts: CspOptions = {
         basePolicies: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'strict-dynamic'"],
-            styleSrc: ["'unsafe-inline'"],
-            fontSrc: [
-                "'self'",
-                "https://cdnjs.cloudflare.com"
-            ],
-            imgSrc: ["'self'", "data:"],
-            frameSrc: [
-                "'self'",
-                "https://challenges.cloudflare.com",
-                "https://clickjack-attack.pages.dev"
-            ],
-            objectSrc: ["'none'"],
-            baseUri: ["'self'"]
+            'default-src': ["'self'"],
+            'script-src': ["'strict-dynamic'"],
+            'style-src': ["'unsafe-inline'"]
         }
     };
+
     let csp = new ContentSecurityPolicy(cspOpts);
     const nonce = "abcdefghijklmnop";
     csp.useNonce(CspDirective.scriptSrc, nonce);
     csp.useNonce(CspDirective.styleSrc, nonce);
     const cspString = csp.toString()
     let parsed = new CspParser(cspString).csp
-    if (!parsed.policyHasScriptNonces(Directive.SCRIPT_SRC)) {
-        throw Error("Expected script-src to have nonce")
-    }
-    if (!parsed.directives["script-src"].includes("'strict-dynamic'")) {
-        throw Error("Expected script-src to retain base policy")
-    }
-    if (!parsed.policyHasScriptNonces(Directive.STYLE_SRC)) {
-        throw Error("Expected style-src to have nonce")
-    }
-    if (!parsed.directives["style-src"].includes("'unsafe-inline'")) {
-        throw Error("Expected style-src to retain base policy")
-    }
-    const findings = new CspEvaluator(parsed).evaluate();
-    console.log(cspString)
-    console.log(findings)
-})();
+    expect(parsed.policyHasScriptNonces(Directive.SCRIPT_SRC)).toBe(true);
+    expect(parsed.directives["script-src"].includes("'strict-dynamic'")).toBe(true);
+    expect(parsed.policyHasScriptNonces(Directive.STYLE_SRC)).toBe(true);
+    expect(parsed.directives["style-src"].includes("'unsafe-inline'")).toBe(true);
+});

@@ -14,6 +14,9 @@ class ScriptNonceHandler {
     }
 }
 
+interface HtmlRewriterHandler {
+
+}
 class StylesheetLinkNonceHandler {
     nonce: string;
 
@@ -82,16 +85,25 @@ class CspItem {
     toString() {
         return `${this.directive.toString()} ${this.values.join(' ')}`;
     }
+
+    getValues(): string[] {
+        return this.values;
+    }
 }
 
 export class ContentSecurityPolicy {
     private policyItems: CspItem[]
 
-    constructor(cspOptions: CspOptions) {
+    constructor(cspOptions: CspOptions, context?: Context) {
         this.policyItems = []
         for (let key of Object.keys(cspOptions.basePolicies)) {
             if (!!cspOptions.basePolicies[key] && cspOptions.basePolicies[key].length > 0) {
-                this.policyItems.push(new CspItem(CspDirective[key as keyof typeof CspDirective], ...cspOptions.basePolicies[key]));
+                if (typeof cspOptions.basePolicies[key] === 'function') {
+                    let value = cspOptions.basePolicies[key](context);
+                    this.policyItems.push(new CspItem(key as CspDirective, value));
+                } else {
+                    this.policyItems.push(new CspItem(key as CspDirective, ...cspOptions.basePolicies[key]));
+                }
             }
         }
     }
@@ -109,36 +121,56 @@ export class ContentSecurityPolicy {
     toString() {
         return this.policyItems.map(p => p.toString()).join('; ');
     }
+
+    getValues(directive: CspDirective): string[] {
+        return this.policyItems.filter(p => p.directive === directive)?.[0].getValues();
+    }
 }
 
+interface Context {
+    env: any
+}
+type SourceValueFunction = (context: Context) => string;
+type SourceValue = SourceValueFunction | string[];
+
+type Policies = {
+    [key in CspDirective]?: SourceValue;
+};
+// type Policies = Record<CspDirective, SourceValue>;
+
+type NonceTag = "script" | "style" | "link";
 export interface CspOptions {
     nonceDirectives?: CspDirective[];
-    basePolicies: {
-        defaultSrc?: string[];
-        scriptSrc?: string[];
-        styleSrc?: string[];
-        fontSrc?: string[];
-        imgSrc?: string[];
-        frameSrc?: string[];
-        frameAncestors?: string[];
-        objectSrc?: string[];
-        baseUri?: string[];
-    },
-
+    nonceTags?: NonceTag[]
+    basePolicies: Policies
 }
 
 export const getNonceSense = (cspOptions: CspOptions): PagesFunction => {
-    const setCspWithNonce: PagesFunction = async (context) => {
+    const nonceDirs = cspOptions.nonceDirectives ? cspOptions.nonceDirectives : [CspDirective.scriptSrc, CspDirective.styleSrc];
+    const nonceTags = cspOptions.nonceTags ? cspOptions.nonceTags : ["script", "style", "link"];
+    const htmlRewriterHandlers = {
+        "script": ScriptNonceHandler,
+        "style" : ScriptNonceHandler,
+        "link": StylesheetLinkNonceHandler
+    }
+    const setCspWithNonce: PagesFunction = async (context: EventContext<unknown, any, Record<string, string>>) => {
         const response = await context.next();
-        let abcd = context.env["ABCD"]
         const nonce = generateNonce();
-        let csp = new ContentSecurityPolicy(cspOptions)
-        const nonceDirs = cspOptions.nonceDirectives ? cspOptions.nonceDirectives : [CspDirective.scriptSrc, CspDirective.styleSrc];
+        let csp = new ContentSecurityPolicy(cspOptions, context)
+
         for (let directive of nonceDirs) {
             csp.useNonce(directive, nonce);
         }
         response.headers.set('Content-Security-Policy', csp.toString());
 
+        let rewriter = new HTMLRewriter;
+
+        // for (let nonceTag of nonceTags) {
+        //     const Rewriter = htmlRewriterHandlers[nonceTag];
+        //     rewriter = rewriter.on(nonceTag,
+        //         new Rewriter(nonce));
+        // }
+        // return rewriter.transform(response);
         return new HTMLRewriter()
             .on('script', new ScriptNonceHandler(nonce))
             .on('link', new StylesheetLinkNonceHandler(nonce))
