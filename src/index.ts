@@ -15,9 +15,6 @@ class ScriptNonceHandler {
     }
 }
 
-interface HtmlRewriterHandler {
-
-}
 class StylesheetLinkNonceHandler {
     nonce: string;
 
