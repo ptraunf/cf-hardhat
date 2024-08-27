@@ -2,6 +2,7 @@ export const generateNonce = (): string => {
     return btoa(crypto.randomUUID());
 }
 
+
 class ScriptNonceHandler {
     nonce: string;
 
@@ -40,6 +41,17 @@ class InlineStyleNonceHandler {
 
     element(element: Element) {
         element.setAttribute('nonce', `${this.nonce}`)
+    }
+}
+
+const nonceHandlerFactory = (tag: NonceTag, nonce: string) => {
+    switch (tag){
+        case 'script':
+            return new ScriptNonceHandler(nonce);
+        case 'style':
+            return new InlineStyleNonceHandler(nonce);
+        case 'link':
+            return new StylesheetLinkNonceHandler(nonce);
     }
 }
 
@@ -136,7 +148,6 @@ type SourceValue = SourceValueFunction | string[];
 type Policies = {
     [key in CspDirective]?: SourceValue;
 };
-// type Policies = Record<CspDirective, SourceValue>;
 
 type NonceTag = "script" | "style" | "link";
 export interface CspOptions {
@@ -147,12 +158,8 @@ export interface CspOptions {
 
 export const getNonceSense = (cspOptions: CspOptions): PagesFunction => {
     const nonceDirs = cspOptions.nonceDirectives ? cspOptions.nonceDirectives : [CspDirective.scriptSrc, CspDirective.styleSrc];
-    const nonceTags = cspOptions.nonceTags ? cspOptions.nonceTags : ["script", "style", "link"];
-    const htmlRewriterHandlers = {
-        "script": ScriptNonceHandler,
-        "style" : ScriptNonceHandler,
-        "link": StylesheetLinkNonceHandler
-    }
+    const nonceTags: NonceTag[] = cspOptions.nonceTags ? cspOptions.nonceTags : ["script", "style", "link"];
+
     const setCspWithNonce: PagesFunction = async (context: EventContext<unknown, any, Record<string, string>>) => {
         const response = await context.next();
         const nonce = generateNonce();
@@ -165,17 +172,11 @@ export const getNonceSense = (cspOptions: CspOptions): PagesFunction => {
 
         let rewriter = new HTMLRewriter;
 
-        // for (let nonceTag of nonceTags) {
-        //     const Rewriter = htmlRewriterHandlers[nonceTag];
-        //     rewriter = rewriter.on(nonceTag,
-        //         new Rewriter(nonce));
-        // }
-        // return rewriter.transform(response);
-        return new HTMLRewriter()
-            .on('script', new ScriptNonceHandler(nonce))
-            .on('link', new StylesheetLinkNonceHandler(nonce))
-            .on('style', new InlineStyleNonceHandler(nonce))
-            .transform(response);
+        for (let nonceTag of nonceTags) {
+            const handler = nonceHandlerFactory(nonceTag, nonce);
+            rewriter = rewriter.on(nonceTag, handler);
+        }
+        return rewriter.transform(response);
     }
     return setCspWithNonce;
 }

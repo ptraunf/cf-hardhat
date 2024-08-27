@@ -1,5 +1,5 @@
 import {CspParser} from "csp_evaluator/dist/parser";
-import {Csp, Directive} from "csp_evaluator/dist/csp"
+import { Directive} from "csp_evaluator/dist/csp"
 import {CspOptions, CspDirective, ContentSecurityPolicy} from "../src/index"
 
 
