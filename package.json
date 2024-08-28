@@ -1,16 +1,23 @@
 {
-  "name": "csp-nonce-sense",
+  "name": "cf-hardhat",
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["/dist"],
+  "files": [
+    "/dist"
+  ],
+  "exports": {
+    "." : "./dist/index.js",
+    "csp": "./dist/csp.js",
+    "security-headers": "./dist/security-headers.js"
+  },
   "type": "module",
   "scripts": {
     "build": "tsc",
     "test": "jest"
   },
   "author": "ptraunf",
-  "description": "This middleware generates and inserts matching nonce values into HTML script/style tags and CSP directives",
+  "description": "HTTP security middleware to protect serverless Workers and Functions",
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240821.1",
     "@types/jest": "^29.5.12",

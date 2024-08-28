@@ -1,6 +1,7 @@
-import {CspParser} from "csp_evaluator/dist/parser";
-import { Directive} from "csp_evaluator/dist/csp"
-import {CspOptions, CspDirective, ContentSecurityPolicy} from "../src/index"
+import {CspParser} from "csp_evaluator/dist/parser.js";
+import { Directive} from "csp_evaluator/dist/csp.js"
+import {ContentSecurityPolicy, CspDirective, CspOptions} from "../src/csp";
+
 
 
 test('CSP can build from initial options', () => {

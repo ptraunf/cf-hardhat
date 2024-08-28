@@ -1,6 +1,10 @@
 import {Config} from "jest";
 
 const config: Config = {
+    roots: [
+        "<rootDir>"
+    ],
+    modulePaths: ["<rootDir>/src"],
     collectCoverage: true,
     collectCoverageFrom: [ "/src/**/*.ts"],
     coverageThreshold: {

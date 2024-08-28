@@ -1,5 +1,5 @@
 # CF Hardhat
-Protect your Cloudflare Workers
+HTTP security middleware to protect serverless Workers and Functions
 
 ## CSP Nonce Middleware
 This middleware generates and inserts nonce values into `script`/`style`/`link` tags and `Content-Security-Policy` headers for Cloudflare Pages & Workers. This allows inline scripts to be loaded (more) securely in compliance with a restrictive CSP.
