@@ -7,9 +7,9 @@
     "/dist"
   ],
   "exports": {
-    "." : "./dist/index.js",
-    "csp": "./dist/csp.js",
-    "security-headers": "./dist/security-headers.js"
+    ".": "./dist/index.js",
+    "./csp" : "./dist/csp.js",
+    "./security-headers": "./dist/security-headers.js"
   },
   "type": "module",
   "scripts": {
