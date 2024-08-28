@@ -153,7 +153,7 @@ export interface CspOptions {
     basePolicies: Policies
 }
 
-export const getNonceSense = (cspOptions: CspOptions): PagesFunction => {
+export const getCspMiddleware = (cspOptions: CspOptions): PagesFunction => {
     const nonceDirs = cspOptions.nonceDirectives ? cspOptions.nonceDirectives : [CspDirective.scriptSrc, CspDirective.styleSrc];
     const nonceTags: NonceTag[] = cspOptions.nonceTags ? cspOptions.nonceTags : ["script", "style", "link"];
 

@@ -1,1 +1,13 @@
-export {CspOptions, CspDirective, ContentSecurityPolicy, getNonceSense} from "./csp.js";
+export {
+    CspOptions,
+    CspDirective,
+    ContentSecurityPolicy,
+    getCspMiddleware
+} from "./csp.js";
+
+export {
+    SecurityHeaderType,
+    SecurityHeadersOptions,
+    SecurityHeaderCollection,
+    getSecurityHeadersMiddleware
+} from "./security-headers.js"

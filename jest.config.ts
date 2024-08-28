@@ -4,7 +4,7 @@ const config: Config = {
     roots: [
         "<rootDir>"
     ],
-    modulePaths: ["<rootDir>/src"],
+    modulePaths: ["<rootDir>"],
     collectCoverage: true,
     collectCoverageFrom: [ "/src/**/*.ts"],
     coverageThreshold: {
@@ -21,11 +21,13 @@ const config: Config = {
     extensionsToTreatAsEsm: [".ts"],
     preset: "ts-jest",
     transform: {
-        "^.+\\.ts$": [
+        "^.+\\.(t|j)s$": [
             "ts-jest",
             {
                 useESM: true,
-                tsconfig: 'tsconfig.test.json'
+                tsconfig: 'tsconfig.test.json',
+                rootDir: '.'
+
             },
         ],
     },

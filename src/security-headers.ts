@@ -70,7 +70,7 @@ export class SecurityHeaderCollection {
 
 }
 
-const getSecurityHeadersMiddleware = (opts?: SecurityHeadersOptions) => {
+export const getSecurityHeadersMiddleware = (opts?: SecurityHeadersOptions) => {
 
     const setSecurityHeaders: PagesFunction = async (context) => {
 

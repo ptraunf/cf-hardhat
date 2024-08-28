@@ -1,6 +1,6 @@
 import {CspParser} from "csp_evaluator/dist/parser.js";
 import { Directive} from "csp_evaluator/dist/csp.js"
-import {ContentSecurityPolicy, CspDirective, CspOptions} from "../src/csp";
+import {ContentSecurityPolicy, CspDirective, CspOptions} from "../src/csp.ts";
 
 
 
