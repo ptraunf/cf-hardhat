@@ -97,9 +97,6 @@ class CspItem {
         return `${this.directive.toString()} ${this.values.join(' ')}`;
     }
 
-    getValues(): string[] {
-        return this.values;
-    }
 }
 
 export class ContentSecurityPolicy {
@@ -211,9 +208,6 @@ export const getCspMiddleware = (cspOptions?: CspOptions): PagesFunction => {
         nonceDirs = getDefaultNonceDirectives();
         nonceTags = getDefaultNonceTags();
     }
-    console.log(`Nonce Dirs: ${nonceDirs}`);
-    console.log(`Nonce Tags: ${nonceTags}`);
-
     const policies = config.policies ? config.policies : getDefaultPolicies()
 
     return async (context: EventContext<unknown, any, Record<string, string>>) => {

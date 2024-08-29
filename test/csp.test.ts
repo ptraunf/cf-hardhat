@@ -2,7 +2,9 @@ import {CspParser} from "csp_evaluator/dist/parser.js";
 import { Directive} from "csp_evaluator/dist/csp.js"
 import {ContentSecurityPolicy, CspDirective, CspOptions} from "../src/csp.ts";
 
+describe("CspOptions", () => {
 
+});
 
 test('CSP can build from initial options', () => {
     const cspOpts: CspOptions = {
