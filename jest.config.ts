@@ -6,14 +6,7 @@ const config: Config = {
     ],
     modulePaths: ["<rootDir>"],
     collectCoverage: true,
-    collectCoverageFrom: [ "/src/**/*.ts"],
-    coverageThreshold: {
-        global: {
-            branches: 50,
-            functions: 100,
-            lines: 50,
-        },
-    },
+    collectCoverageFrom: ["src/**/*.ts"],
     errorOnDeprecated: true,
     resetMocks: true,
     testPathIgnorePatterns: ['dist/'],

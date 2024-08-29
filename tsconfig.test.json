@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "rootDir": "src",
     "allowImportingTsExtensions": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",
