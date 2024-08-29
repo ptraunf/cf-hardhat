@@ -44,7 +44,7 @@ class InlineStyleNonceHandler {
 }
 
 const nonceHandlerFactory = (tag: NonceTag, nonce: string) => {
-    switch (tag){
+    switch (tag) {
         case 'script':
             return new ScriptNonceHandler(nonce);
         case 'style':
@@ -105,15 +105,18 @@ class CspItem {
 export class ContentSecurityPolicy {
     private policyItems: CspItem[]
 
-    constructor(cspOptions: CspOptions, context?: Context) {
+    constructor(policies: Policies, context?: Context) {
         this.policyItems = []
-        for (let key of Object.keys(cspOptions.basePolicies)) {
-            if (!!cspOptions.basePolicies[key] && cspOptions.basePolicies[key].length > 0) {
-                if (typeof cspOptions.basePolicies[key] === 'function') {
-                    let value = cspOptions.basePolicies[key](context);
+
+        for (let key of Object.keys(policies)) {
+            if (!!policies[key]) {
+                if (typeof policies[key] === 'function') {
+                    let value = policies[key](context);
                     this.policyItems.push(new CspItem(key as CspDirective, value));
+                } else if (typeof policies[key] === 'object') {
+                    this.policyItems.push(new CspItem(key as CspDirective, ...policies[key]));
                 } else {
-                    this.policyItems.push(new CspItem(key as CspDirective, ...cspOptions.basePolicies[key]));
+                    this.policyItems.push(new CspItem(key as CspDirective));
                 }
             }
         }
@@ -121,7 +124,7 @@ export class ContentSecurityPolicy {
 
     useNonce(directive: CspDirective, nonce: string) {
         const nonceString = `'nonce-${nonce}'`;
-        let existingPolicy = this.policyItems.filter((p) => p.directive === directive)?.[0];
+        let existingPolicy = this.getPolicy(directive);
         if (existingPolicy) {
             existingPolicy.prependValue(nonceString);
         } else {
@@ -133,8 +136,8 @@ export class ContentSecurityPolicy {
         return this.policyItems.map(p => p.toString()).join('; ');
     }
 
-    getValues(directive: CspDirective): string[] {
-        return this.policyItems.filter(p => p.directive === directive)?.[0].getValues();
+    getPolicy(directive: CspDirective): CspItem {
+        return this.policyItems.filter(p => p.directive === directive)?.[0]
     }
 }
 
@@ -143,24 +146,80 @@ type SourceValueFunction = (context: Context) => string;
 type SourceValue = SourceValueFunction | string[];
 
 type Policies = {
-    [key in CspDirective]?: SourceValue;
+    [key in CspDirective]?: SourceValue
 };
 
-type NonceTag = "script" | "style" | "link";
-export interface CspOptions {
-    nonceDirectives?: CspDirective[];
-    nonceTags?: NonceTag[]
-    basePolicies: Policies
+export const getDefaultNonceTags = (): NonceTag[] => {
+    return ["script", "style", "link"];
+}
+export const getDefaultNonceDirectives = (): CspDirective[] => {
+    return [
+        'script-src' as CspDirective,
+        "style-src" as CspDirective
+    ];
 }
 
-export const getCspMiddleware = (cspOptions: CspOptions): PagesFunction => {
-    const nonceDirs = cspOptions.nonceDirectives ? cspOptions.nonceDirectives : [CspDirective.scriptSrc, CspDirective.styleSrc];
-    const nonceTags: NonceTag[] = cspOptions.nonceTags ? cspOptions.nonceTags : ["script", "style", "link"];
+export const getDefaultPolicies = (): Policies => {
+    return {
+        "base-uri": ["'self'"],
+        "default-src": ["'self'"],
+        "font-src": ["'self'"],
+        "form-action": ["'self'"],
+        "frame-ancestors": ["'self'"],
+        "img-src": ["'self'"],
+        "object-src": ["'none'"],
+        "script-src": ["'self'"],
+        "script-src-attr": ["'none'"],
+        "style-src": ["'self'"],
+        "upgrade-insecure-requests": [""],
+    }
+}
 
-    const setCspWithNonce: PagesFunction = async (context: EventContext<unknown, any, Record<string, string>>) => {
+export const getDefaultOptions = (): CspOptions => {
+    return {
+        nonce: {
+            tags: getDefaultNonceTags(),
+            directives: getDefaultNonceDirectives()
+        },
+        policies: getDefaultPolicies()
+    }
+}
+
+type NonceTag = "script" | "style" | "link";
+
+export interface CspOptions {
+    nonce?: {
+        tags?: NonceTag[],
+        directives?: CspDirective[]
+    } | boolean;
+    policies?: Policies;
+}
+
+export const getCspMiddleware = (cspOptions?: CspOptions): PagesFunction => {
+    const config = cspOptions ? cspOptions : getDefaultOptions();
+
+    let nonceTags: NonceTag[];
+    let nonceDirs: CspDirective[];
+
+    if (typeof config.nonce === "boolean" && !config.nonce) {
+        nonceDirs = [];
+        nonceTags = [];
+    } else if (typeof config.nonce === "object") {
+        nonceDirs = config.nonce?.directives ? config.nonce.directives : getDefaultNonceDirectives()
+        nonceTags = config.nonce?.tags ? config.nonce.tags : getDefaultNonceTags()
+    } else {
+        nonceDirs = getDefaultNonceDirectives();
+        nonceTags = getDefaultNonceTags();
+    }
+    console.log(`Nonce Dirs: ${nonceDirs}`);
+    console.log(`Nonce Tags: ${nonceTags}`);
+
+    const policies = config.policies ? config.policies : getDefaultPolicies()
+
+    return async (context: EventContext<unknown, any, Record<string, string>>) => {
         const response = await context.next();
         const nonce = generateNonce();
-        let csp = new ContentSecurityPolicy(cspOptions, context)
+        let csp = new ContentSecurityPolicy(policies, context)
 
         for (let directive of nonceDirs) {
             csp.useNonce(directive, nonce);
@@ -175,5 +234,4 @@ export const getCspMiddleware = (cspOptions: CspOptions): PagesFunction => {
         }
         return rewriter.transform(response);
     }
-    return setCspWithNonce;
 }

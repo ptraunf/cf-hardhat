@@ -13,6 +13,8 @@ export enum SecurityHeaderType {
 
 type HeaderValueFunction = (context: Context) => string;
 type HeaderValue = HeaderValueFunction | string | boolean;
+
+
 type SecurityHeaders = {
     [key in SecurityHeaderType]?: HeaderValue;
 }
@@ -21,7 +23,9 @@ const ONE_YEAR = 365 * ONE_DAY;
 
 const HSTS_MAX_AGE = ONE_YEAR;
 const ACCESS_CONTROL_MAX_AGE = ONE_DAY;
-
+type config = {
+    [key in SecurityHeaderType]?: HeaderValue;
+}
 const defaultSecurityHeaders: SecurityHeaders = {
     [SecurityHeaderType.accessControlAllowOrigin]: "'self'",
     [SecurityHeaderType.accessControlMaxAge]: `${ACCESS_CONTROL_MAX_AGE}`,

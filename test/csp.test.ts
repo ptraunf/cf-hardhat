@@ -6,7 +6,7 @@ import {ContentSecurityPolicy, CspDirective, CspOptions} from "../src/csp.ts";
 
 test('CSP can build from initial options', () => {
     const cspOpts: CspOptions = {
-        basePolicies: {
+        policies: {
             'default-src': ["'self'"],
             'font-src': [
                 "'self'",
@@ -22,12 +22,12 @@ test('CSP can build from initial options', () => {
         }
     };
 
-    const csp = new ContentSecurityPolicy(cspOpts);
+    const csp = new ContentSecurityPolicy(cspOpts.policies);
     expect(csp).toBeTruthy();
 });
 test('CSP toString produces parseable CSP', () => {
     const cspOpts: CspOptions = {
-        basePolicies: {
+        policies: {
             'default-src': ["'self'"],
             'font-src': [
                 "'self'",
@@ -42,7 +42,7 @@ test('CSP toString produces parseable CSP', () => {
             'base-uri': ["'self'"]
         }
     };
-    const csp = new ContentSecurityPolicy(cspOpts);
+    const csp = new ContentSecurityPolicy(cspOpts.policies);
     const cspString = csp.toString()
     const parsed = new CspParser(cspString).csp
     expect(parsed).toBeTruthy();
@@ -57,7 +57,7 @@ test('CSP toString includes all the specified policies', () => {
         "object-src 'none'",
         "base-uri 'self'"];
     const cspOpts: CspOptions = {
-        basePolicies: {
+        policies: {
             'default-src': ["'self'"],
             'font-src': [
                 "'self'",
@@ -72,7 +72,7 @@ test('CSP toString includes all the specified policies', () => {
             'base-uri': ["'self'"]
         }
     };
-    const csp = new ContentSecurityPolicy(cspOpts);
+    const csp = new ContentSecurityPolicy(cspOpts.policies);
     const cspString = csp.toString()
     for (const expectedPolicy of expectedCspPolicies) {
 
@@ -82,7 +82,7 @@ test('CSP toString includes all the specified policies', () => {
 
 test('useNonce inserts nonce into CSP', () => {
     const cspOpts: CspOptions = {
-        basePolicies: {
+        policies: {
             'default-src': ["'self'"],
             [CspDirective.fontSrc]: [
                 "'self'",
@@ -97,7 +97,7 @@ test('useNonce inserts nonce into CSP', () => {
             'base-uri': ["'self'"]
         }
     };
-    const csp = new ContentSecurityPolicy(cspOpts);
+    const csp = new ContentSecurityPolicy(cspOpts.policies);
     const nonce = "abcdefghijklmnop";
     csp.useNonce(CspDirective.scriptSrc, nonce);
     csp.useNonce(CspDirective.styleSrc, nonce);
@@ -109,14 +109,14 @@ test('useNonce inserts nonce into CSP', () => {
 
 test('useNonce retains initial script-src and style-src policies specified', () => {
     const cspOpts: CspOptions = {
-        basePolicies: {
+        policies: {
             'default-src': ["'self'"],
             'script-src': ["'strict-dynamic'"],
             'style-src': ["'unsafe-inline'"]
         }
     };
 
-    let csp = new ContentSecurityPolicy(cspOpts);
+    let csp = new ContentSecurityPolicy(cspOpts.policies);
     const nonce = "abcdefghijklmnop";
     csp.useNonce(CspDirective.scriptSrc, nonce);
     csp.useNonce(CspDirective.styleSrc, nonce);
