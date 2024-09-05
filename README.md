@@ -1,11 +1,39 @@
 # CF Hardhat
 HTTP security middleware to protect serverless Workers and Functions
 
-## CSP Nonce Middleware
-This middleware generates and inserts nonce values into `script`/`style`/`link` tags and `Content-Security-Policy` headers for Cloudflare Pages & Workers. This allows inline scripts to be loaded (more) securely in compliance with a restrictive CSP.
+## Content-Security-Policy Middleware
+This module provides factory function for middleware that generates a Content-Security-Policy header and adds it to the response. 
+
+```typescript
+// In functions/_middleware.ts:
+import {getCspMiddleware} from "cf-hardhat/csp";
+
+// Using the default options
+export const onRequest = getCspMiddleware();
+```
+### Features:
+- Use nonces in`script-src` and `style-src` directives
+- Specify how nonces are inserted into your pages, or automatically inject them
+- Define directives that depend on a runtime context
+
+
+and inserts nonce values into `script`/`style`/`link` tags and `Content-Security-Policy` headers for Cloudflare Pages & Workers. This allows inline scripts to be loaded (more) securely in compliance with a restrictive CSP.
 
 ### Usage
-! Warning: Please read and understand the caveats below before using cf-hardhat in production. 
+The `CspOptions` includes `policies` configuration. Policies may be defined as an array of strings, or as a function that resolves to a string, given a context with `env`.
+
+```typescript
+let cspOpts: CspOptions = {
+    policies: {
+        ... 
+        'frame-src': ["'self'", "https:"],
+        'frame-ancestors': (context) => `${context.env.ALLOWED_FRAME_ANCESTORS}`,
+        ... 
+    }
+};
+```
+
+If using nonces, a function can be passed and called with the nonce to return a `PagesFunction` that injects the nonce into the page. For example, 
 
 ```typescript
 // In functions/_middleware.ts:
@@ -16,15 +44,31 @@ const cspOpts: CspOptions = {
         'frame-src': [ "'none'" ],
         ...   
     },
+    nonce: { 
+        directives: ['script-src'], // default: script-src, style-src
+        callback: (nonce: string) => {
+            return async (context) => {
+                let response = await context.next();
+                // Insert via HTML templating engine
+                let responseWithNonce = ...
+                return responseWithNonce;
+            }
+        }
+    }
 };
-const nonceMiddleware = getCspMiddleware(cspOpts);
-
-export const onRequest = [..., nonceMiddleware, ...];
+```
+This allows for full control over how a nonce is inserted into a page. Alternatively, `autoInjectTags` can be defined to automatically insert nonces into all specified tags present in the page. 
+```typescript
+{
+...
+    nonce: {
+        autoInjectTags: ["script", "link", "style"]
+    }
+}
 ```
 
-By default, 
 
-*What's the point?* 
+## *What's the point?* 
 
 Allowing all inline scripts may be a security risk; however, disallowing all inline scripts can be inconvenient and excessively strict for some threat models. Using nonces (or hashes), a Content Security Policy can allow certain scripts and styles to load, provided they have the right value.
 
@@ -47,18 +91,21 @@ Then only `script` elements having a `nonce` attribute with the same `randomBase
 ```
 
 ## Caveats
-*Isn't it a risk to blindly inject nonces into all script tags?*
+*Isn't it a risk to automatically inject nonces into all script tags?*
 
 Generally, yes. According to [OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html):
 
 >Don't create a middleware that replaces all script tags with "script nonce=..." because attacker-injected scripts will then get the nonces as well. You need an actual HTML templating engine to use nonces.
 
-If an attacker's script is injected into an HTML response before it passes through the `cf-hardhat` CSP-nonce middleware (e.g. ), the injected script element would indeed get a valid nonce and be allowed to run by the browser. 
+If an attacker's script is injected into an HTML response before it passes through the `cf-hardhat` CSP middleware with `autoInjectTags` enabled, the malicious script element would indeed get a valid nonce and be allowed to run by the browser. 
 
-If the recommendation to use an HTML templating engine as suggested by OWASP is not feasible, additional considerations can be taken to mitigate the risk of erroneously inserting a valid nonce into a malicious script.
 
-Exploitation of this behavior is contingent on the malicious script being injected before passing through the middleware. This could happen if a persisted XSS payload is used *unsanitized* to dynamically build a web page. To mitigate this risk, any application accepting untrusted input should **always** validate and/or sanitize input server-side, and any application rendering untrusted content should **always** encode output to ensure it remains *content* and doesn't become *code*.
 
+How could an unwanted script get into a page before passing through the middleware? 
+
+This could happen if a persisted XSS payload is used *unsanitized* to dynamically build a web page. To mitigate this risk, any application accepting untrusted input should **always** validate and/or sanitize input server-side, and any application rendering untrusted content should **always** encode output to ensure it remains *content* and doesn't become *code*.
+
+If proper output encoding and input sanitization are employed, the risk of using `autoInjectTags` may be acceptable. See this [CSP Demo](https://csp-demo-app.pages.dev) to compare various strategies and their effects on security.
 
 Applications should apply defense in depth according to a threat model. 
 

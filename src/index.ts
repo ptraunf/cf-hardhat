@@ -10,16 +10,16 @@ export {
     getDefaultPolicies,
     getDefaultOptions,
     generateNonce,
-} from "./csp.js";
+} from "./csp";
 
 export {
     CacheControlOptions,
     getCacheControlMiddleware
-} from "./cache-control.js"
+} from "./cache-control"
 
 export {
     SecurityHeaderType,
     SecurityHeadersOptions,
     SecurityHeaderCollection,
     getSecurityHeadersMiddleware
-} from "./security-headers.js"
+} from "./security-headers"
