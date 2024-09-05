@@ -1,4 +1,4 @@
-import {ResolvableCollection, resolveCollection} from "../src/common.ts";
+import {ResolvableCollection, resolveCollection} from "../src/common";
 
 describe('Resolvable Collection', () => {
    test('Resolvable Collection can be built from values or functions', () => {

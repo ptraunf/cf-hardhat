@@ -1,4 +1,4 @@
-import {getHstsHeaderValue} from "../src/hsts.ts";
+import {getHstsHeaderValue} from "../src/hsts";
 
 describe('HTTPS Strict Transport Security Middleware', () => {
     test('HSTS options are built into a valid string', () => {

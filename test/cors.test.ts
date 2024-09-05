@@ -1,4 +1,4 @@
-import {resolveCollection} from "../src/common.ts";
+import {resolveCollection} from "../src/common";
 
 describe('CORS Middleware', () => {
     test('CorsHeaders collection contains Access-Control-Allow-Origin header', () => {

@@ -8,21 +8,21 @@ This middleware generates and inserts nonce values into `script`/`style`/`link` 
 ! Warning: Please read and understand the caveats below before using cf-hardhat in production. 
 
 ```typescript
-// In functions/_middleware.ts/js:
-import {CspOptions, getNonceSense} from "csp-nonce-sense";
+// In functions/_middleware.ts:
+import {CspOptions, getCspMiddleware} from "cf-hardhat/csp";
 
 const cspOpts: CspOptions = {
-    nonceTags: ["script", "style"], // script, style, and link are default nonce tags.
-    basePolicies: {
+    policies: {
         'frame-src': [ "'none'" ],
         ...   
-    }
+    },
 };
-
-const nonceMiddleware = getNonceSense(cspOpts);
+const nonceMiddleware = getCspMiddleware(cspOpts);
 
 export const onRequest = [..., nonceMiddleware, ...];
 ```
+
+By default, 
 
 *What's the point?* 
 

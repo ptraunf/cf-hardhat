@@ -1,4 +1,4 @@
-import {Context} from "./common.ts";
+import {Context} from "./common";
 
 import { Element} from "@cloudflare/workers-types";
 

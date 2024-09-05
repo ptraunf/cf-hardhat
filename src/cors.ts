@@ -1,4 +1,4 @@
-import {Context, ResolvableCollection, resolveCollection, ResolvedCollection} from "./common.js";
+import {Context, ResolvableCollection, resolveCollection, ResolvedCollection} from "./common";
 
 export enum AccessControlHeader {
     accessControlAllowOrigin = "access-control-allow-origin",

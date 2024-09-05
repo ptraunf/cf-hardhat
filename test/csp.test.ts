@@ -1,5 +1,5 @@
-import {CspParser} from "csp_evaluator/dist/parser.js";
-import {Directive} from "csp_evaluator/dist/csp.js"
+import {CspParser} from "csp_evaluator/dist/parser";
+import {Directive} from "csp_evaluator/dist/csp"
 import {PagesFunction, ContentOptions, Element} from "@cloudflare/workers-types";
 import {
     ContentSecurityPolicy,
@@ -8,10 +8,10 @@ import {
     getDefaultOptions, getNormalizedOptions,
     InlineStyleNonceHandler, nonceHandlerFactory, Policies,
     ScriptNonceHandler, StylesheetLinkNonceHandler
-} from "../src/csp.ts";
+} from "../src/csp";
 import {
     MockElement
-} from "./test-utils.ts"
+} from "./test-utils"
 
 describe("CspOptions", () => {
     test("Default CSP Policies set object-src 'none'", () => {

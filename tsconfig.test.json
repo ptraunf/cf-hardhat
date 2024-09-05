@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "allowImportingTsExtensions": true,
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+
+    "module": "esnext",
+    "moduleResolution": "node",
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,

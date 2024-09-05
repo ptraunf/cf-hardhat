@@ -1,5 +1,5 @@
 
-import {SecurityHeaderType, SecurityHeadersOptions, SecurityHeaderCollection} from '../src/security-headers.ts';
+import {SecurityHeaderType, SecurityHeadersOptions, SecurityHeaderCollection} from '../src/security-headers';
 
 test('Options override default security headers', () => {
     const opts : SecurityHeadersOptions = {

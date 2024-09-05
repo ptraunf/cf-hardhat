@@ -2,7 +2,7 @@ import {
     ResolvableCollection,
     resolveCollection,
     ResolvedCollection
-} from "./common.ts";
+} from "./common";
 
 import {PagesFunction} from "@cloudflare/workers-types"
 

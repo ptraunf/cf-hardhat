@@ -1,5 +1,5 @@
-import {Context, resolveCollection} from "../src/common.ts"
-import {CacheControlHeader} from "../src/cache-control.ts";
+import {Context, resolveCollection} from "../src/common"
+import {CacheControlHeader} from "../src/cache-control";
 
 describe("CacheControl", () => {
     test('resolveDirectives can resolve function arguments to values', () => {
