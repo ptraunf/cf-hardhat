@@ -2,11 +2,14 @@ export {
     CspOptions,
     CspDirective,
     ContentSecurityPolicy,
+    NoncePagesFunctionFactory,
+    getCspFactory,
     getCspMiddleware,
     getDefaultNonceTags,
     getDefaultNonceDirectives,
     getDefaultPolicies,
-    getDefaultOptions
+    getDefaultOptions,
+    generateNonce,
 } from "./csp.js";
 
 export {

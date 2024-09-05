@@ -1,5 +1,7 @@
 import {Context} from "./common.js";
 
+import { Element} from "@cloudflare/workers-types";
+
 export const generateNonce = (): string => {
     return btoa(crypto.randomUUID());
 }
@@ -42,16 +44,21 @@ export class InlineStyleNonceHandler {
         element.setAttribute('nonce', `${this.nonce}`)
     }
 }
-
+const nonceHandlers: {[key in NonceTag]: (nonce: string) => HTMLRewriterElementContentHandlers} = {
+    'script': (nonce: string) => new ScriptNonceHandler(nonce),
+    'style': (nonce: string) => new InlineStyleNonceHandler(nonce),
+    'link': (nonce: string) => new StylesheetLinkNonceHandler(nonce),
+}
 export const nonceHandlerFactory = (tag: NonceTag, nonce: string) => {
-    switch (tag) {
-        case 'script':
-            return new ScriptNonceHandler(nonce);
-        case 'style':
-            return new InlineStyleNonceHandler(nonce);
-        case 'link':
-            return new StylesheetLinkNonceHandler(nonce);
-    }
+    return nonceHandlers[tag](nonce);
+    // switch (tag) {
+    //     case 'script':
+    //         return new ScriptNonceHandler(nonce);
+    //     case 'style':
+    //         return new InlineStyleNonceHandler(nonce);
+    //     case 'link':
+    //         return new StylesheetLinkNonceHandler(nonce);
+    // }
 }
 
 
@@ -101,31 +108,22 @@ class CspItem {
 
 export class ContentSecurityPolicy {
     private policyItems: CspItem[]
+    private readonly nonceDirectives: CspDirective[];
 
-    constructor(policies: Policies, context?: Context) {
-        this.policyItems = []
-
-        for (let key of Object.keys(policies)) {
-            if (!!policies[key]) {
-                if (typeof policies[key] === 'function') {
-                    let value = policies[key](context);
-                    this.policyItems.push(new CspItem(key as CspDirective, value));
-                } else if (typeof policies[key] === 'object') {
-                    this.policyItems.push(new CspItem(key as CspDirective, ...policies[key]));
-                } else {
-                    this.policyItems.push(new CspItem(key as CspDirective));
-                }
-            }
-        }
+    constructor(cspItems: CspItem[], nonceDirectives?: CspDirective[]) {
+        this.policyItems = cspItems;
+        this.nonceDirectives = nonceDirectives ? nonceDirectives : [];
     }
 
-    useNonce(directive: CspDirective, nonce: string) {
+    useNonce(nonce: string) {
         const nonceString = `'nonce-${nonce}'`;
-        let existingPolicy = this.getPolicy(directive);
-        if (existingPolicy) {
-            existingPolicy.prependValue(nonceString);
-        } else {
-            this.policyItems.push(new CspItem(directive, nonceString));
+        for (let directive of this.nonceDirectives) {
+            let existingPolicy = this.getPolicy(directive);
+            if (existingPolicy) {
+                existingPolicy.prependValue(nonceString);
+            } else {
+                this.policyItems.push(new CspItem(directive, nonceString));
+            }
         }
     }
 
@@ -146,8 +144,24 @@ export type Policies = {
     [key in CspDirective]?: SourceValue
 };
 
+
+const resolvePolicies = (policies: Policies, context: Context): CspItem[] => {
+    let resolvedPolicies: CspItem[] = []
+    Object.entries(policies).map(([directive, sourceVal]) => {
+        if (!!sourceVal) {
+            if (typeof sourceVal === 'function') {
+                resolvedPolicies.push(new CspItem(directive as CspDirective, sourceVal(context)));
+            } else if (Array.isArray(sourceVal)) {
+                resolvedPolicies.push(new CspItem(directive as CspDirective, ...sourceVal))
+            } else {
+                resolvedPolicies.push(new CspItem(directive as CspDirective));
+            }
+        }
+    });
+    return resolvedPolicies;
+}
 export const getDefaultNonceTags = (): NonceTag[] => {
-    return ["script", "style", "link"];
+    return [];
 }
 export const getDefaultNonceDirectives = (): CspDirective[] => {
     return [
@@ -165,9 +179,6 @@ export const getDefaultPolicies = (): Policies => {
         "frame-ancestors": ["'self'"],
         "img-src": ["'self'"],
         "object-src": ["'none'"],
-        "script-src": ["'self'"],
-        "script-src-attr": ["'none'"],
-        "style-src": ["'self'"],
         "upgrade-insecure-requests": [""],
     }
 }
@@ -175,7 +186,7 @@ export const getDefaultPolicies = (): Policies => {
 export const getDefaultOptions = (): CspOptions => {
     return {
         nonce: {
-            tags: getDefaultNonceTags(),
+            autoInjectTags: getDefaultNonceTags(),
             directives: getDefaultNonceDirectives()
         },
         policies: getDefaultPolicies()
@@ -186,53 +197,94 @@ type NonceTag = "script" | "style" | "link";
 
 export interface CspOptions {
     nonce?: {
-        tags?: NonceTag[],
-        directives?: CspDirective[]
+        autoInjectTags?: NonceTag[],
+        directives?: CspDirective[],
+        callback? : NoncePagesFunctionFactory
     } | boolean;
     policies?: Policies;
 }
-type NormalizedCspOptions = {
-    nonceTags: NonceTag[],
-    nonceDirectives: CspDirective[],
-    policies: Policies
-}
-export const getNormalizedOptions = (cspOptions?: CspOptions) : NormalizedCspOptions => {
-    const config = cspOptions ? cspOptions : getDefaultOptions();
-    let nonceTags: NonceTag[];
-    let nonceDirectives: CspDirective[];
 
+type NormalizedCspOptions = {
+    policies: Policies
+    nonceDirectives: CspDirective[],
+    callback: NoncePagesFunctionFactory
+}
+export const getNormalizedOptions = (cspOptions?: CspOptions): NormalizedCspOptions => {
+    const config = cspOptions ? cspOptions : getDefaultOptions();
+    let autoInjectNonceTags: NonceTag[];
+    let nonceDirectives: CspDirective[];
+    let callback: NoncePagesFunctionFactory;
     if (typeof config.nonce === "boolean" && !config.nonce) {
         nonceDirectives = [];
-        nonceTags = [];
+        autoInjectNonceTags = [];
     } else if (typeof config.nonce === "object") {
         nonceDirectives = config.nonce?.directives ? config.nonce.directives : getDefaultNonceDirectives()
-        nonceTags = config.nonce?.tags ? config.nonce.tags : getDefaultNonceTags()
+        autoInjectNonceTags = config.nonce?.autoInjectTags ? config.nonce.autoInjectTags : getDefaultNonceTags()
+        callback = config.nonce?.callback ? config.nonce.callback : defaultCallback;
     } else {
         nonceDirectives = getDefaultNonceDirectives();
-        nonceTags = getDefaultNonceTags();
+        autoInjectNonceTags = getDefaultNonceTags();
+    }
+
+    if (autoInjectNonceTags.length > 0) {
+        callback = getAutoInjectNonceFunctionFactory(autoInjectNonceTags);
     }
     const policies = config.policies ? config.policies : getDefaultPolicies()
-    return {nonceTags, nonceDirectives, policies};
+    return {policies, nonceDirectives, callback};
 };
-export const getCspMiddleware = (cspOptions?: CspOptions): PagesFunction => {
 
-    const {policies, nonceDirectives, nonceTags} = getNormalizedOptions(cspOptions);
-    return async (context: EventContext<unknown, any, Record<string, string>>) => {
-        const response = await context.next();
-        const nonce = generateNonce();
-        let csp = new ContentSecurityPolicy(policies, context)
-
-        for (let directive of nonceDirectives) {
-            csp.useNonce(directive, nonce);
+const _getCspFactory = ({policies, nonceDirectives} : NormalizedCspOptions) => {
+    return (context: Context, nonceValue?: string) => {
+        const resolvedPolicies = resolvePolicies(policies, context);
+        let csp = new ContentSecurityPolicy(resolvedPolicies, nonceDirectives);
+        if (nonceValue) {
+            csp.useNonce(nonceValue);
         }
-        response.headers.set('Content-Security-Policy', csp.toString());
+        return csp;
+    };
+}
+export const getCspFactory = (cspOptions: CspOptions) => {
+    const normalizedOpts = getNormalizedOptions(cspOptions);
+    return  _getCspFactory(normalizedOpts);
+}
+export type NoncePagesFunctionFactory = (nonce: string) => PagesFunction<unknown, any, Record<string, unknown>>;
 
-        let rewriter = new HTMLRewriter;
-
-        for (let nonceTag of nonceTags) {
-            const handler = nonceHandlerFactory(nonceTag, nonce);
-            rewriter = rewriter.on(nonceTag, handler);
-        }
-        return rewriter.transform(response);
+const defaultCallback: NoncePagesFunctionFactory = (_: string) => {
+    return async (context) => {
+        return await context.next();
     }
+}
+const getAutoInjectNonceFunctionFactory = (autoInjectTags: NonceTag[]) : NoncePagesFunctionFactory => {
+    return (nonce: string) => {
+        return async (context) => {
+            let response = await context.next();
+            let rewriter = new HTMLRewriter;
+            for (let nonceTag of autoInjectTags) {
+                const handler = nonceHandlerFactory(nonceTag, nonce);
+                rewriter = rewriter.on(nonceTag, handler);
+            }
+            return rewriter.transform(response);
+        }
+    }
+}
+
+
+export const getCspMiddleware = (cspOpts: CspOptions) => {
+    const opts: NormalizedCspOptions = getNormalizedOptions(cspOpts);
+    const cspFactory = _getCspFactory(opts);
+    const cspNonceWrapper: PagesFunction = async (context) => {
+        let nonce = generateNonce();
+        let csp = cspFactory(context, nonce)
+        let res: Response;
+        if (!!opts.callback) {
+            console.log("WRAPPER: Using nonce callback from opts");
+            res = await opts.callback(nonce)(context);
+        } else {
+            console.log("WRAPPER: Using context.next()")
+            res = await context.next();
+        }
+        res.headers.set("Content-Security-Policy", csp.toString());
+        return res;
+    }
+    return cspNonceWrapper
 }

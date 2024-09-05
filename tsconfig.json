@@ -11,7 +11,7 @@
     "downlevelIteration": true,
     "lib": ["esnext"],
     "outDir": "dist",
-    "types": ["@cloudflare/workers-types", "node"],
+    "types": ["@cloudflare/workers-types"],
     "skipLibCheck": true
   },
   "include": [

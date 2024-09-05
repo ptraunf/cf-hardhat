@@ -23,14 +23,11 @@ const ONE_YEAR = 365 * ONE_DAY;
 
 const HSTS_MAX_AGE = ONE_YEAR;
 const ACCESS_CONTROL_MAX_AGE = ONE_DAY;
-type config = {
-    [key in SecurityHeaderType]?: HeaderValue;
-}
+
 const defaultSecurityHeaders: SecurityHeaders = {
     [SecurityHeaderType.accessControlAllowOrigin]: "'self'",
     [SecurityHeaderType.accessControlMaxAge]: `${ACCESS_CONTROL_MAX_AGE}`,
     [SecurityHeaderType.strictTransportSecurity]: `max-age=${HSTS_MAX_AGE}; includeSubdomains`,
-    [SecurityHeaderType.pragma]: 'no-cache',
     [SecurityHeaderType.expires]: '0',
     [SecurityHeaderType.cacheControl]: 'no-cache, no-store, must-revalidate',
     [SecurityHeaderType.xContentTypeOptions]: 'nosniff',
