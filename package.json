@@ -9,7 +9,10 @@
   "exports": {
     ".": "./dist/index.js",
     "./csp" : "./dist/csp.js",
-    "./security-headers": "./dist/security-headers.js"
+    "./security-headers": "./dist/security-headers.js",
+    "./cors" : "./dist/access-control.js",
+    "./hsts" : "./dist/strict-transport-security.js",
+    "./cache-control" : "./dist/cache-control.js"
   },
   "type": "module",
   "scripts": {

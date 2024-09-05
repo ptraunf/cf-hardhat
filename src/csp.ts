@@ -1,11 +1,10 @@
-import {Context} from "./common.js";
+import {Context} from "./common.ts";
 
 import { Element} from "@cloudflare/workers-types";
 
 export const generateNonce = (): string => {
     return btoa(crypto.randomUUID());
 }
-
 
 export class ScriptNonceHandler {
     nonce: string;
@@ -51,14 +50,6 @@ const nonceHandlers: {[key in NonceTag]: (nonce: string) => HTMLRewriterElementC
 }
 export const nonceHandlerFactory = (tag: NonceTag, nonce: string) => {
     return nonceHandlers[tag](nonce);
-    // switch (tag) {
-    //     case 'script':
-    //         return new ScriptNonceHandler(nonce);
-    //     case 'style':
-    //         return new InlineStyleNonceHandler(nonce);
-    //     case 'link':
-    //         return new StylesheetLinkNonceHandler(nonce);
-    // }
 }
 
 

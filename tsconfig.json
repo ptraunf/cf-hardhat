@@ -8,6 +8,7 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
     "downlevelIteration": true,
     "lib": ["esnext"],
     "outDir": "dist",

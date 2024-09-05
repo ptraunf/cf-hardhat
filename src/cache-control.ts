@@ -1,5 +1,10 @@
+import {
+    ResolvableCollection,
+    resolveCollection,
+    ResolvedCollection
+} from "./common.ts";
+
 import {PagesFunction} from "@cloudflare/workers-types"
-import {Context,  ResolvableCollection, resolveCollection, ResolvedCollection} from "./common.js";
 
 enum CacheControlDirective {
     maxAge = 'max-age',

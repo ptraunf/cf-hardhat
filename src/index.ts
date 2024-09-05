@@ -13,6 +13,11 @@ export {
 } from "./csp.js";
 
 export {
+    CacheControlOptions,
+    getCacheControlMiddleware
+} from "./cache-control.js"
+
+export {
     SecurityHeaderType,
     SecurityHeadersOptions,
     SecurityHeaderCollection,
