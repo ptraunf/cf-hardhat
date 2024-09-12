@@ -1,6 +1,7 @@
 {
   "name": "cf-hardhat",
   "version": "0.1.0",
+  "repository": "https://github.com/ptraunf/cf-hardhat",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
