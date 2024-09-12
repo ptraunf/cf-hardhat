@@ -7,7 +7,7 @@ export enum AccessControlHeader {
     accessControlMaxAge = "access-control-max-age",
 }
 
-type CorsHeaders = ResolvableCollection<AccessControlHeader, string[]>
+export type CorsHeaders = ResolvableCollection<AccessControlHeader, string[]>
 type ResolvedCorsHeaders = ResolvedCollection<AccessControlHeader, string[]>;
 
 export const DEFAULT_MAX_AGE = 86400; // Seconds in 24 hours

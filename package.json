@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "/dist/**"
+    "dist"
   ],
   "exports": {
     ".": "./dist/index.js",
@@ -16,6 +16,7 @@
   },
   "type": "module",
   "scripts": {
+    "clean": "rm -rf dist/",
     "build": "tsc",
     "test": "vitest",
     "test:debug": "node --inspect-brk ./node_modules/.bin/vitest"

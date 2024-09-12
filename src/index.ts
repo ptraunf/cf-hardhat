@@ -18,8 +18,7 @@ export {
 } from "./cache-control"
 
 export {
-    SecurityHeaderType,
-    SecurityHeadersOptions,
-    SecurityHeaderCollection,
-    getSecurityHeadersMiddleware
-} from "./security-headers"
+    getCorsMiddleware,
+    CorsHeaders,
+    AccessControlHeader
+} from './cors';
