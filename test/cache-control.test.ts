@@ -1,8 +1,10 @@
 import {Context, resolveCollection} from "../src/common"
 import {CacheControlHeader} from "../src/cache-control";
 
+import {describe, it, expect} from 'vitest';
+
 describe("CacheControl", () => {
-    test('resolveDirectives can resolve function arguments to values', () => {
+    it('resolveDirectives can resolve function arguments to values', () => {
         let
             directives= {
                 'max-age': (context: Context) => context.env.MAX_AGE
@@ -11,7 +13,7 @@ describe("CacheControl", () => {
         let resolvedDirectives = resolveCollection(directives, {env: {MAX_AGE: expectedValue}});
         expect(resolvedDirectives['max-age']).toEqual(expectedValue);
     })
-    test('CacheControlHeader can be resolved to a valid Cache-Control header value', () => {
+    it('CacheControlHeader can be resolved to a valid Cache-Control header value', () => {
 
         let expectedValue = 1234;
         let cacheControlHeader = new CacheControlHeader({'private': true}, {'max-age': expectedValue});

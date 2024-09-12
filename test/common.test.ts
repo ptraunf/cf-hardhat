@@ -1,7 +1,9 @@
 import {ResolvableCollection, resolveCollection} from "../src/common";
 
+import { describe, it, expect } from 'vitest';
+
 describe('Resolvable Collection', () => {
-   test('Resolvable Collection can be built from values or functions', () => {
+   it('Resolvable Collection can be built from values or functions', () => {
        let unresolved : ResolvableCollection<string, number> = {
            'a' : 1,
            'b': () => 2,
@@ -13,7 +15,8 @@ describe('Resolvable Collection', () => {
        expect(resolved['b']).toStrictEqual(2);
        expect(resolved['c']).toStrictEqual(3);
    });
-   test('ResolvableValue functions may accept a context that has an env', () => {
+
+   it('ResolvableValue functions may accept a context that has an env', () => {
        let unresolved : ResolvableCollection<string, number> = {
            'a' : 1,
            'b': (context) => context.env.b,

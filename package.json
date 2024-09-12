@@ -17,7 +17,6 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "jest": "jest",
     "test": "vitest",
     "test:debug": "node --inspect-brk ./node_modules/.bin/vitest"
   },
@@ -26,12 +25,8 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.4.30",
     "@cloudflare/workers-types": "^4.20240821.1",
-    "@types/jest": "^29.5.12",
     "@types/node": "^22.5.0",
     "csp_evaluator": "^1.1.2",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
     "typescript": "^5.5.4",
     "vitest": "^1.5.3"
   }

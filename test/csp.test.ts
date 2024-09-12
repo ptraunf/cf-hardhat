@@ -10,30 +10,38 @@ import {
     ScriptNonceHandler, StylesheetLinkNonceHandler
 } from "../src/csp";
 import {
+    waitOnExecutionContext,
+    createPagesEventContext, ProvidedEnv
+} from 'cloudflare:test';
+
+import { describe, it, expect } from 'vitest';
+import {
     MockElement
 } from "./test-utils"
 
+
+const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 describe("CspOptions", () => {
-    test("Default CSP Policies set object-src 'none'", () => {
+    it("Default CSP Policies set object-src 'none'", () => {
         let opts = getDefaultOptions();
         expect(opts.policies["object-src"]).toContain("'none'");
     });
-    test("Default CSP Policies include upgrade-insecure-requests", () => {
+    it("Default CSP Policies include upgrade-insecure-requests", () => {
         let opts = getDefaultOptions();
         expect(opts.policies["upgrade-insecure-requests"]).toBeTruthy();
     });
 
-    test("Omitted nonce directives result in default nonce directives ", () => {
+    it("Omitted nonce directives result in default nonce directives ", () => {
         let opts = getNormalizedOptions({});
         expect(opts.nonceDirectives).toEqual(getDefaultNonceDirectives());
     });
 
-    // test("Omitted nonce tags result in default nonce tags", () => {
+    // it("Omitted nonce tags result in default nonce tags", () => {
     //     let opts = getNormalizedOptions({});
     //     expect(opts.nonceTags).toEqual(getDefaultNonceTags());
     // });
 
-    test("Nonce set to false results in empty nonce tags and directives", () => {
+    it("Nonce set to false results in empty nonce tags and directives", () => {
         let opts = {
             ...getDefaultOptions(),
             nonce: false
@@ -46,7 +54,7 @@ describe("CspOptions", () => {
 });
 
 describe("ContentSecurityPolicy", () => {
-    test('CSP can build from initial options', () => {
+    it('CSP can build from initial options', () => {
         const mockContext = {
             env: {}
         }
@@ -70,7 +78,7 @@ describe("ContentSecurityPolicy", () => {
         const csp = cspFactory(mockContext)
         expect(csp).toBeTruthy();
     });
-    test('CSP toString produces parseable CSP', () => {
+    it('CSP toString produces parseable CSP', () => {
         const mockContext = {
             env: {}
         }
@@ -96,7 +104,7 @@ describe("ContentSecurityPolicy", () => {
         expect(parsed).toBeTruthy();
     });
 
-    test('CSP toString includes all the specified policies', () => {
+    it('CSP toString includes all the specified policies', () => {
         const mockContext = {
             env: {}
         }
@@ -131,7 +139,7 @@ describe("ContentSecurityPolicy", () => {
         }
     });
 
-    test('Policies defined as functions are resolved to string values', () => {
+    it('Policies defined as functions are resolved to string values', () => {
 
         let cspOpts: CspOptions = {
             policies: {
@@ -150,7 +158,7 @@ describe("ContentSecurityPolicy", () => {
         expect(csp.getPolicy(CspDirective.frameAncestors).values).toContain(expectedAllowedFrameAncestors);
     });
 
-    test('Falsey directives are omitted', () => {
+    it('Falsey directives are omitted', () => {
         const cspOpts: CspOptions = {
             policies: {
                 'base-uri': ["'self'"],
@@ -167,7 +175,7 @@ describe("ContentSecurityPolicy", () => {
         let csp = getCspFactory(cspOpts)(mockContext);
         expect(csp.getPolicy(CspDirective.frameAncestors)).toBeUndefined();
     });
-    test('Directives set to true are included', () => {
+    it('Directives set to true are included', () => {
         const mockContext = {
             env: {}
         }
@@ -182,7 +190,7 @@ describe("ContentSecurityPolicy", () => {
     });
 });
 describe("Use Nonce", () => {
-    test('useNonce inserts nonce into CSP', () => {
+    it('useNonce inserts nonce into CSP', () => {
         const cspOpts: CspOptions = {
             nonce: {
                 directives: [CspDirective.scriptSrc, CspDirective.styleSrc]
@@ -214,7 +222,7 @@ describe("Use Nonce", () => {
         expect(parsed.policyHasScriptNonces(Directive.STYLE_SRC)).toBe(true);
     });
 
-    test('useNonce retains initial script-src and style-src policies specified', () => {
+    it('useNonce retains initial script-src and style-src policies specified', () => {
         const cspOpts: CspOptions = {
             policies: {
                 'default-src': ["'self'"],
@@ -238,14 +246,14 @@ describe("Use Nonce", () => {
 
 
 describe("Nonce Handlers", () => {
-    test("ScriptNonceHandler sets the nonce attribute", () => {
+    it("ScriptNonceHandler sets the nonce attribute", () => {
         const nonce = "NONCE-ABC-123";
         let scriptNonceHandler = new ScriptNonceHandler(nonce);
         let testElement: Element = new MockElement("script");
         scriptNonceHandler.element(testElement);
         expect(testElement.getAttribute("nonce")).toBe(nonce);
     });
-    test("InlineStyleNonceHandler sets the nonce attribute", () => {
+    it("InlineStyleNonceHandler sets the nonce attribute", () => {
         const nonce = "NONCE-ABC-123";
         let inlineStyleNonceHandler = new InlineStyleNonceHandler(nonce);
         let testElement: Element = new MockElement("style");
@@ -253,7 +261,7 @@ describe("Nonce Handlers", () => {
         inlineStyleNonceHandler.element(testElement);
         expect(testElement.getAttribute("nonce")).toBe(nonce);
     });
-    test("StylesheetNonceHandler sets the nonce attribute if 'rel' is 'stylesheet'", () => {
+    it("StylesheetNonceHandler sets the nonce attribute if 'rel' is 'stylesheet'", () => {
 
         const nonce = "NONCE-ABC-123";
         let stylesheetNonceHandler = new StylesheetLinkNonceHandler(nonce);
@@ -265,7 +273,7 @@ describe("Nonce Handlers", () => {
         expect(testElement.getAttribute("nonce")).toBe(nonce);
     });
 
-    test("StylesheetNonceHandler does NOT set the nonce attribute if 'rel' is NOT 'stylesheet'", () => {
+    it("StylesheetNonceHandler does NOT set the nonce attribute if 'rel' is NOT 'stylesheet'", () => {
 
         const nonce = "NONCE-ABC-123";
         let stylesheetNonceHandler = new StylesheetLinkNonceHandler(nonce);
@@ -277,17 +285,17 @@ describe("Nonce Handlers", () => {
         expect(testElement.getAttribute("nonce")).toBeUndefined();
     });
 
-    test("nonceHandlerFactory builds and returns the correct handler for 'script' tag", () => {
+    it("nonceHandlerFactory builds and returns the correct handler for 'script' tag", () => {
         const nonce = "NONCE-ABC-123";
         let handler = nonceHandlerFactory("script", nonce)
         expect(handler).toBeInstanceOf(ScriptNonceHandler);
     });
-    test("nonceHandlerFactory builds and returns the correct handler for 'style' tag", () => {
+    it("nonceHandlerFactory builds and returns the correct handler for 'style' tag", () => {
         const nonce = "NONCE-ABC-123";
         let handler = nonceHandlerFactory("style", nonce)
         expect(handler).toBeInstanceOf(InlineStyleNonceHandler);
     });
-    test("nonceHandlerFactory builds and returns the correct handler for 'style' tag", () => {
+    it("nonceHandlerFactory builds and returns the correct handler for 'style' tag", () => {
         const nonce = "NONCE-ABC-123";
         let handler = nonceHandlerFactory("link", nonce)
         expect(handler).toBeInstanceOf(StylesheetLinkNonceHandler);
@@ -295,9 +303,59 @@ describe("Nonce Handlers", () => {
 })
 
 describe("CSP Middleware Factory", () => {
-    test("getCspMiddleware returns a Cloudflare PagesFunction", () => {
+    it("getCspMiddleware returns a Cloudflare PagesFunction", () => {
         let opts = getDefaultOptions();
         let cspMiddleware = getCspMiddleware(opts);
         expect(typeof cspMiddleware).toEqual("function");
     })
-})
+});
+
+describe('CSP Middleware', () => {
+    it('adds the Content-Security-Policy header', async () => {
+        const request = new IncomingRequest('http://example.com', {method: "GET"});
+        const middleware = getCspMiddleware<ProvidedEnv>();
+        const mockContext = createPagesEventContext<typeof middleware>({
+            request: request,
+            params: {},
+            data: {},
+            next: (init) : Response => {
+                console.log("mockContext: next")
+                return new Response("OK", {status :200});
+            }
+        } );
+        const response = await middleware(mockContext);
+        await waitOnExecutionContext(mockContext);
+        const actualCsp = response.headers.get("content-security-policy");
+        expect(actualCsp).toBeTruthy();
+    });
+    it('accepts a nonce callback', async () => {
+        const request = new IncomingRequest('http://example.com', {method: "GET"});
+        const cspOptions : CspOptions = {
+            nonce: {
+                callback: (nonce: string) => {
+                    return async (context) => {
+                        return new Response(`${nonce}`, {status :200});
+                    }
+                }
+            }
+        };
+        const middleware = getCspMiddleware<ProvidedEnv>(cspOptions);
+        const mockContext = createPagesEventContext<typeof middleware>({
+            request: request,
+            params: {},
+            data: {},
+            next: (req: Request) : Response => {
+                return new Response("MOCK NEXT BODY", {status :200});
+            }
+        });
+        const response = await middleware(mockContext);
+        const actualCsp = response.headers.get("content-security-policy");
+        expect(actualCsp).toBeTruthy();
+        const noncePattern = /\'nonce\-([a-zA-Z0-9]+)\'/g;
+        const matches = actualCsp.matchAll(noncePattern);
+        let groups = [...matches].map(m => m[1]);
+        let cspNonce: string = groups[1];
+        let body = await response.text();
+        expect(body.includes(cspNonce)).toBe(true);
+    });
+});
