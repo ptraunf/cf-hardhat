@@ -5,8 +5,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "downlevelIteration": true,
