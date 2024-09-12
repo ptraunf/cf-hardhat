@@ -10,7 +10,6 @@ export type ResolvedCollection<K extends string, V> = {
     [key in K]?: V
 }
 
-
 export function resolveCollection<E extends string, V>(unresolved: ResolvableCollection<E, V>, context: Context) : ResolvedCollection<E, V>{
     let resolved : ResolvedCollection<E, V> = {};
     for (const key in unresolved) {

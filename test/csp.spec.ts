@@ -22,6 +22,7 @@ describe('CSP Middleware', () => {
             }
         } );
         const response = await middleware(mockContext);
+        await waitOnExecutionContext(mockContext);
         const actualCsp = response.headers.get("content-security-policy");
         expect(actualCsp).toBeTruthy();
     });
@@ -40,6 +41,7 @@ describe('CSP Middleware', () => {
         const mockContext = createPagesEventContext<typeof middleware>({
             request: request,
             params: {},
+            data: {},
             next: (req: Request) : Response => {
                 return new Response("MOCK NEXT BODY", {status :200});
             }

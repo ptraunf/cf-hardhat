@@ -10,7 +10,7 @@ const config: Config = {
     errorOnDeprecated: true,
     resetMocks: true,
     testPathIgnorePatterns: ['dist/'],
-    testRegex: "/test/.*\\.(test|spec)\\.ts",
+    testRegex: "/test/.*\\.test\\.ts",
     extensionsToTreatAsEsm: [".ts"],
     preset: "ts-jest",
     transform: {
