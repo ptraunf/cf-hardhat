@@ -82,3 +82,24 @@ export class MockElement implements Element {
         throw new Error("Method not implemented.");
     }
 }
+
+
+export const createChainedHandler = function<E>(middlewares: PagesFunction<E>[]): PagesFunction<E> {
+    console.log(`Creating chained handler for ${middlewares.length} middlewares`);
+    return async (context: EventContext<E, any, Record<string, unknown>>) => {
+        let index = 0;
+
+        async function next() {
+            if (index >= middlewares.length) {
+                return new Response('No handler defined', { status: 404 });
+            }
+            console.log(`next: ${index}`);
+            const middleware = middlewares[index++];
+            return middleware({
+                ...context,
+                next: next
+            });
+        }
+        return await next();
+    };
+}

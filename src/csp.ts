@@ -260,18 +260,17 @@ const getAutoInjectNonceFunctionFactory = (autoInjectTags: NonceTag[]) : NoncePa
 }
 
 
-export const getCspMiddleware = (cspOpts: CspOptions) => {
+export const getCspMiddleware = <E>(cspOpts?: CspOptions): PagesFunction<E, any, Record<string, unknown>> => {
     const opts: NormalizedCspOptions = getNormalizedOptions(cspOpts);
     const cspFactory = _getCspFactory(opts);
     const cspNonceWrapper: PagesFunction = async (context) => {
         let nonce = generateNonce();
         let csp = cspFactory(context, nonce)
         let res: Response;
-        if (!!opts.callback) {
-            console.log("WRAPPER: Using nonce callback from opts");
-            res = await opts.callback(nonce)(context);
+        if (!!opts.callback && typeof opts.callback === 'function') {
+            const pagesFunction = opts.callback(nonce);
+            res = await pagesFunction(context);
         } else {
-            console.log("WRAPPER: Using context.next()")
             res = await context.next();
         }
         res.headers.set("Content-Security-Policy", csp.toString());

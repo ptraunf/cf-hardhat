@@ -10,7 +10,7 @@ const config: Config = {
     errorOnDeprecated: true,
     resetMocks: true,
     testPathIgnorePatterns: ['dist/'],
-    testRegex: "/test/.*\\.test\\.ts",
+    testRegex: "/test/.*\\.(test|spec)\\.ts",
     extensionsToTreatAsEsm: [".ts"],
     preset: "ts-jest",
     transform: {
@@ -18,7 +18,7 @@ const config: Config = {
             "ts-jest",
             {
                 useESM: true,
-                tsconfig: 'tsconfig.test.json',
+                tsconfig: './test/tsconfig.json',
                 rootDir: '.'
 
             },
