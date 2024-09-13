@@ -26,5 +26,5 @@ export {
 export {
     HstsOptions,
     getDefaultHstsOptions,
-    getStrictTransportSecurityMiddleware
+    getHstsMiddleware
 } from './hsts'

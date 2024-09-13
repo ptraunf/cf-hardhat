@@ -16,6 +16,7 @@ This middleware sets headers that control how a site may be accessed - notably, 
 
 ### Usage
 ```typescript
+import {getCorsMiddleware} from "cf-hardhat/cors";
 // Use default values
 const corsMiddleware = getCorsMiddleware();
 // or provide custom:
@@ -125,6 +126,23 @@ Then only `script` elements having a `nonce` attribute with the same `randomBase
 <script nonce="wrongBase64Value">
     ...
 </script>
+```
+
+## HTTP Strict Transport Security
+This middleware adds the `Strict-Transport-Security` header to responses, which tells the browser "only load this site (and subdomains) over encrypted HTTPS"
+
+```typescript
+import { getHstsMiddleware } from "cf-hardhat/hsts";
+
+const hstsMiddleware = getHstsMiddleware();
+// Using defaults, resulting header is:
+// Strict-Transport-Security: max-age=31536000, includeSubdomains
+```
+
+## Cache Control
+Sets the `Cache-Control` header
+```typescript
+
 ```
 
 ## Caveats

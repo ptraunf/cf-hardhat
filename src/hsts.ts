@@ -14,7 +14,7 @@ export const getDefaultHstsOptions = () : HstsOptions => {
     }
 }
 
-export const getStrictTransportSecurityMiddleware = (opts?: HstsOptions) : PagesFunction => {
+export const getHstsMiddleware = (opts?: HstsOptions) : PagesFunction => {
     if (!opts) {
         opts = getDefaultHstsOptions();
     }

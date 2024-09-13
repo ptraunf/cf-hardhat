@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {createPagesEventContext, waitOnExecutionContext} from "cloudflare:test";
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
-import {getHstsHeaderValue, getStrictTransportSecurityMiddleware, ONE_YEAR} from "../src/hsts";
+import {getHstsHeaderValue, getHstsMiddleware, ONE_YEAR} from "../src/hsts";
 
 describe('HTTPS Strict Transport Security Middleware', () => {
     it('HSTS options are built into a valid string', () => {
@@ -14,7 +14,7 @@ describe('HTTPS Strict Transport Security Middleware', () => {
         expect(hstsValue.includes('max-age=1000000, includeSubdomains, preload')).toBe(true);
     });
     it('Adds the Strict-Transport-Security Header', async () => {
-        const middleware = getStrictTransportSecurityMiddleware();
+        const middleware = getHstsMiddleware();
         const request = new IncomingRequest('http://example.com', {method: "GET"});
         const expectedResponseBody = "MOCK NEXT BODY";
         const mockContext = createPagesEventContext<typeof middleware>({
