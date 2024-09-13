@@ -1,8 +1,8 @@
 import {resolveCollection} from "../src/common";
 import { describe, it, expect } from 'vitest';
+import {createPagesEventContext, waitOnExecutionContext} from "cloudflare:test";
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 import {getCorsMiddleware} from "../src/cors"
-import {createPagesEventContext, waitOnExecutionContext} from "cloudflare:test";
 
 describe('CORS Middleware', () => {
     it('CorsHeaders collection contains Access-Control-Allow-Origin header', () => {

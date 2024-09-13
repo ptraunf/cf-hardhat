@@ -22,3 +22,9 @@ export {
     CorsHeaders,
     AccessControlHeader
 } from './cors';
+
+export {
+    HstsOptions,
+    getDefaultHstsOptions,
+    getStrictTransportSecurityMiddleware
+} from './hsts'
