@@ -1,12 +1,12 @@
 {
   "name": "cf-hardhat",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "repository": "https://github.com/ptraunf/cf-hardhat",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "LICENSE.txt"
   ],
   "exports": {
     ".": "./dist/index.js",
@@ -23,7 +23,7 @@
     "test": "vitest",
     "test:debug": "node --inspect-brk ./node_modules/.bin/vitest"
   },
-  "author": "ptraunf",
+  "author": "Peter Traunfeld",
   "description": "HTTP security middleware to protect serverless Workers and Functions",
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.4.30",
