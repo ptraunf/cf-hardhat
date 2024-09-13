@@ -1,28 +1,55 @@
 # CF Hardhat
-HTTP security middleware to protect serverless Workers and Functions
+Web security middleware to protect serverless Workers and Functions
+
+## Modules
+- Cross-Origin Resource Sharing (CORS) Access-Control Middleware 
+- Content Security Policy (CSP) middleware
+- HTTP Strict Transport Security (HSTS) middleware
+- Cache Control middleware
+
+## Cross-Origin Resource Sharing (CORS) Middleware
+This middleware sets headers that control how a site may be accessed - notably, which origins may access a site. 
+
+### Features
+- Respond to Preflight OPTIONS requests with CORS headers and 204 No Content
+- Add CORS headers to responses
+
+### Usage
+```typescript
+// Use default values
+const corsMiddleware = getCorsMiddleware();
+// or provide custom:
+const corsMiddleware = getCorsMiddleware({
+    'access-control-allow-origin': ['https://example.com'], 
+    'access-control-allow-methods': ['GET', 'POST'],
+    'access-control-allow-headers': ['X-Requested-By']
+});
+
+export const onRequest = [
+    // ... other PagesFunctions
+    corsMiddleware
+];
+```
 
 ## Content-Security-Policy Middleware
-This module provides factory function for middleware that generates a Content-Security-Policy header and adds it to the response. 
+This module provides a factory function for middleware that generates a Content-Security-Policy header and adds it to the response. 
+
+### Features:
+- Use nonces in`script-src` and `style-src` directives
+- Specify how nonces are inserted into your pages, or automatically inject them
+- Define directives that depend on environment variables
+
+### Usage
+The `CspOptions` includes `policies` configuration. Policies may be defined as an array of strings, or as a function that resolves to a string, given a context with `env`.
 
 ```typescript
 // In functions/_middleware.ts:
 import {getCspMiddleware} from "cf-hardhat/csp";
 
 // Using the default options
-export const onRequest = getCspMiddleware();
-```
-### Features:
-- Use nonces in`script-src` and `style-src` directives
-- Specify how nonces are inserted into your pages, or automatically inject them
-- Define directives that depend on a runtime context
+const cspMiddleware = getCspMiddleware();
 
-
-and inserts nonce values into `script`/`style`/`link` tags and `Content-Security-Policy` headers for Cloudflare Pages & Workers. This allows inline scripts to be loaded (more) securely in compliance with a restrictive CSP.
-
-### Usage
-The `CspOptions` includes `policies` configuration. Policies may be defined as an array of strings, or as a function that resolves to a string, given a context with `env`.
-
-```typescript
+// Populate directives from Environment variables
 let cspOpts: CspOptions = {
     policies: {
         ... 
@@ -31,6 +58,13 @@ let cspOpts: CspOptions = {
         ... 
     }
 };
+const cspMiddleware = getCspMiddleware(cspOpts);
+
+export const onRequest = [
+    // ... other PagesFunctions
+    cspMiddleware
+];
+
 ```
 
 If using nonces, a function can be passed and called with the nonce to return a `PagesFunction` that injects the nonce into the page. For example, 
@@ -45,7 +79,10 @@ const cspOpts: CspOptions = {
         ...   
     },
     nonce: { 
+        // Specify which CSP directives should declare a nonce
         directives: ['script-src'], // default: script-src, style-src
+
+        // Specify how nonces are injected:
         callback: (nonce: string) => {
             return async (context) => {
                 let response = await context.next();
@@ -68,7 +105,7 @@ This allows for full control over how a nonce is inserted into a page. Alternati
 ```
 
 
-## *What's the point?* 
+### *What's the point of all this nonce sense?* 
 
 Allowing all inline scripts may be a security risk; however, disallowing all inline scripts can be inconvenient and excessively strict for some threat models. Using nonces (or hashes), a Content Security Policy can allow certain scripts and styles to load, provided they have the right value.
 
