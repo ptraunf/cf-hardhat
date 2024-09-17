@@ -31,23 +31,36 @@ type ResolvedCacheControlFlags = ResolvedCollection<CacheControlFlag, boolean>;
 
 
 export interface CacheControlOptions {
-    directives: CacheControlDirectives,
-    flags: CacheControlFlags
+    directives?: CacheControlDirectives,
+    flags?: CacheControlFlags
 }
 export class CacheControlHeader {
    constructor(private readonly flags: ResolvedCacheControlFlags, private readonly directives: ResolvedCacheControlDirectives) {
    }
    toString(): string {
-       const flags = Object.keys(this.flags).filter((k) => this.flags[k]).join(', ');
-       const directivesWithArgs = Object.keys(this.directives).map((k) => `${k}=${this.directives[k]}`).join(', ');
-       return `${[flags, directivesWithArgs].join(", ")}`;
+       const flags = Object.keys(this.flags).filter((k) => this.flags[k]);
+       const directivesWithArgs = Object.keys(this.directives).map((k) => {console.log(`${k}`); return `${k}=${this.directives[k]}`});
+       return `${[...flags, ...directivesWithArgs].join(", ")}`;
    }
 }
-
-export const getCacheControlMiddleware = (cacheControlOptions: CacheControlOptions): PagesFunction => {
-    // validate opts
+export const getDefaultCacheControlOptions = (): CacheControlOptions => {
+    return {
+        flags: {
+            'private': true,
+            'no-cache': true,
+            'no-store': true
+        },
+        directives: {
+            'max-age': 0
+        },
+    }
+}
+export const getCacheControlMiddleware = (cacheControlOptions?: CacheControlOptions): PagesFunction => {
+    if (!cacheControlOptions) {
+        cacheControlOptions = getDefaultCacheControlOptions();
+    }
     return async (context) => {
-        let resolvedDirectives = resolveCollection(cacheControlOptions.directives, context);
+        let resolvedDirectives : ResolvedCacheControlDirectives = resolveCollection(cacheControlOptions.directives, context);
         let resolvedFlags = resolveCollection(cacheControlOptions.flags, context);
         let cacheControlHeader = new CacheControlHeader(resolvedFlags, resolvedDirectives)
         let res = await context.next();

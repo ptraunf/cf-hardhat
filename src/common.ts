@@ -15,7 +15,7 @@ export function resolveCollection<E extends string, V>(unresolved: ResolvableCol
     for (const key in unresolved) {
         if (typeof unresolved[key] === 'function') {
             resolved[key] = unresolved[key](context);
-        } else if (!!unresolved[key]) {
+        } else {
             resolved[key] = unresolved[key] as V;
         }
     }
