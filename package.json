@@ -11,9 +11,8 @@
   "exports": {
     ".": "./dist/index.js",
     "./csp": "./dist/csp.js",
-    "./security-headers": "./dist/security-headers.js",
-    "./cors": "./dist/access-control.js",
-    "./hsts": "./dist/strict-transport-security.js",
+    "./cors": "./dist/cors.js",
+    "./hsts": "./dist/hsts.js",
     "./cache-control": "./dist/cache-control.js"
   },
   "type": "module",
