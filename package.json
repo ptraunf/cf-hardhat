@@ -25,11 +25,11 @@
   "author": "Peter Traunfeld",
   "description": "HTTP security middleware to protect serverless Workers and Functions",
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.4.30",
-    "@cloudflare/workers-types": "^4.20240821.1",
+    "@cloudflare/vitest-pool-workers": "^0.5.32",
+    "@cloudflare/workers-types": "^4.20241127.0",
     "@types/node": "^22.5.0",
     "csp_evaluator": "^1.1.2",
     "typescript": "^5.5.4",
-    "vitest": "^1.5.3"
+    "vitest": "^2.1.6"
   }
 }
