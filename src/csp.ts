@@ -273,8 +273,13 @@ export const getCspMiddleware = <E>(cspOpts?: CspOptions): PagesFunction<E, any,
         } else {
             res = await context.next();
         }
-        res.headers.set("Content-Security-Policy", csp.toString());
-        return res;
+        return new Response(res.body, {
+            status: res.status,
+            headers: {
+                ...res.headers.entries(),
+                "Content-Security-Policy": csp.toString()
+            },
+        })
     }
     return cspNonceWrapper
 }
