@@ -1,10 +1,10 @@
-import {createPagesEventContext, waitOnExecutionContext} from "cloudflare:test";
-
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 import {Context, resolveCollection} from "../src/common"
 import {CacheControlHeader, getCacheControlMiddleware} from "../src/cache-control";
 
 import {describe, it, expect} from 'vitest';
+
+import {createPagesEventContext, waitOnExecutionContext} from "cloudflare:test";
 
 describe("CacheControl", () => {
     it('resolveDirectives can resolve function arguments to values', () => {
@@ -30,18 +30,18 @@ describe("CacheControl", () => {
 
     it('Uses default Cache-Control options if none are provided', async () => {
         let middleware = getCacheControlMiddleware();
-        const request = new IncomingRequest('http://example.com', {method: "GET"});
+        const request = new IncomingRequest('https://example.com', {method: "GET"});
         const mockContext = createPagesEventContext<typeof middleware>({
             request: request,
             params: {},
             data: {},
-            next: (req: Request): Response => {
+            next: (_req: Request): Response => {
                 return new Response("MOCK NEXT BODY", {status: 200});
             }
         });
 
         const response = await middleware(mockContext);
-        waitOnExecutionContext(mockContext);
+        await waitOnExecutionContext(mockContext);
 
         expect(response).toBeTruthy();
         expect(response.headers).toBeTruthy();
@@ -56,18 +56,18 @@ describe("CacheControl", () => {
                 "private": true
             }
         });
-        const request = new IncomingRequest('http://example.com', {method: "GET"});
+        const request = new IncomingRequest('https://example.com', {method: "GET"});
         const mockContext = createPagesEventContext<typeof middleware>({
             request: request,
             params: {},
             data: {},
-            next: (req: Request): Response => {
+            next: (_req: Request): Response => {
                 return new Response("MOCK NEXT BODY", {status: 200});
             }
         });
 
         const response = await middleware(mockContext);
-        waitOnExecutionContext(mockContext);
+        await waitOnExecutionContext(mockContext);
         expect(response).toBeTruthy();
         expect(response.headers).toBeTruthy();
         expect(response.headers.get('cache-control')).toBeTruthy();

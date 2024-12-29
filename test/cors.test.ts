@@ -16,18 +16,18 @@ describe('CORS Middleware', () => {
     it('Responds to Preflight requests with 204 and CORS headers', async () => {
 
         const middleware = getCorsMiddleware();
-        const request = new IncomingRequest('http://example.com', {method: "OPTIONS"});
+        const request = new IncomingRequest('https://example.com', {method: "OPTIONS"});
         const mockContext = createPagesEventContext<typeof middleware>({
             request: request,
             params: {},
             data: {},
-            next: (req: Request): Response => {
+            next: (_req: Request): Response => {
                 return new Response("MOCK NEXT BODY", {status: 200});
             }
         });
 
         const response = await middleware(mockContext);
-        waitOnExecutionContext(mockContext);
+        await waitOnExecutionContext(mockContext);
 
         expect(response).toBeTruthy();
         expect(response.status).toStrictEqual(204); // 204 NO CONTENT
@@ -39,13 +39,13 @@ describe('CORS Middleware', () => {
     it('Adds CORS headers to responses', async () => {
 
         const middleware = getCorsMiddleware();
-        const request = new IncomingRequest('http://example.com', {method: "GET"});
+        const request = new IncomingRequest('https://example.com', {method: "GET"});
         const expectedResponseBody = "MOCK NEXT BODY";
         const mockContext = createPagesEventContext<typeof middleware>({
             request: request,
             params: {},
             data: {},
-            next: (req: Request): Response => {
+            next: (_req: Request): Response => {
                 return new Response(expectedResponseBody, {status: 200});
             }
         });

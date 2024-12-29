@@ -6,11 +6,12 @@
     "types": [
       "@cloudflare/workers-types/experimental",
       "@cloudflare/vitest-pool-workers",
-    ]
+    ],
+    "skipLibCheck": true
   },
   "include": [
-    "../src/**/*.ts",
     "./**/*.ts",
   ],
-  "exclude": []
+  "exclude": [
+  ]
 }

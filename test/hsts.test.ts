@@ -15,13 +15,13 @@ describe('HTTPS Strict Transport Security Middleware', () => {
     });
     it('Adds the Strict-Transport-Security Header', async () => {
         const middleware = getHstsMiddleware();
-        const request = new IncomingRequest('http://example.com', {method: "GET"});
+        const request = new IncomingRequest('https://example.com', {method: "GET"});
         const expectedResponseBody = "MOCK NEXT BODY";
         const mockContext = createPagesEventContext<typeof middleware>({
             request: request,
             params: {},
             data: {},
-            next: (req: Request): Response => {
+            next: (_req: Request): Response => {
                 return new Response(expectedResponseBody, {status: 200});
             }
         });
