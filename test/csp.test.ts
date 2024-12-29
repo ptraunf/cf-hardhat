@@ -364,4 +364,29 @@ describe('CSP Middleware', () => {
         let body = await response.text();
         expect(body.includes(cspNonce)).toBe(true);
     });
+    it('does not remove any prior headers', async () => {
+        const request = new IncomingRequest('https://example.com', {method: "GET"});
+        const middleware = getCspMiddleware<ProvidedEnv>();
+        const expectedContentType = "text/html"
+        const mockContext = createPagesEventContext<typeof middleware>({
+            request: request,
+            params: {},
+            data: {},
+            next: (_init): Response => {
+                console.log("mockContext: next")
+                return new Response("OK",
+                    {
+                        status: 200,
+                        headers: {
+                            "content-type": expectedContentType,
+                        }
+                    });
+            }
+        });
+        const response = await middleware(mockContext);
+        await waitOnExecutionContext(mockContext);
+        const actualContentType = response.headers.get("content-type");
+        expect(actualContentType).toEqual(expectedContentType)
+
+    });
 });
