@@ -1,20 +1,26 @@
 import {CspParser} from "csp_evaluator/dist/parser";
 import {Directive} from "csp_evaluator/dist/csp"
-import {PagesFunction, ContentOptions, Element} from "@cloudflare/workers-types";
+import {Element} from "@cloudflare/workers-types";
 import {
-    ContentSecurityPolicy,
     CspDirective,
-    CspOptions, getCspFactory, getCspMiddleware, getDefaultNonceDirectives, getDefaultNonceTags,
-    getDefaultOptions, getNormalizedOptions,
-    InlineStyleNonceHandler, nonceHandlerFactory, Policies,
-    ScriptNonceHandler, StylesheetLinkNonceHandler
+    CspOptions,
+    getCspFactory,
+    getCspMiddleware,
+    getDefaultNonceDirectives,
+    getDefaultOptions,
+    getNormalizedOptions,
+    InlineStyleNonceHandler,
+    nonceHandlerFactory,
+    Policies,
+    ScriptNonceHandler,
+    StylesheetLinkNonceHandler
 } from "../src/csp";
 import {
     waitOnExecutionContext,
     createPagesEventContext, ProvidedEnv
 } from 'cloudflare:test';
 
-import { describe, it, expect } from 'vitest';
+import {describe, it, expect} from 'vitest';
 import {
     MockElement
 } from "./test-utils"
@@ -249,14 +255,14 @@ describe("Nonce Handlers", () => {
     it("ScriptNonceHandler sets the nonce attribute", () => {
         const nonce = "NONCE-ABC-123";
         let scriptNonceHandler = new ScriptNonceHandler(nonce);
-        let testElement: Element = new MockElement("script");
+        let testElement = new MockElement("script") as Element;
         scriptNonceHandler.element(testElement);
         expect(testElement.getAttribute("nonce")).toBe(nonce);
     });
     it("InlineStyleNonceHandler sets the nonce attribute", () => {
         const nonce = "NONCE-ABC-123";
         let inlineStyleNonceHandler = new InlineStyleNonceHandler(nonce);
-        let testElement: Element = new MockElement("style");
+        let testElement = new MockElement("style") as Element;
 
         inlineStyleNonceHandler.element(testElement);
         expect(testElement.getAttribute("nonce")).toBe(nonce);
@@ -266,7 +272,7 @@ describe("Nonce Handlers", () => {
         const nonce = "NONCE-ABC-123";
         let stylesheetNonceHandler = new StylesheetLinkNonceHandler(nonce);
 
-        let testElement: Element = new MockElement("style");
+        let testElement = new MockElement("style") as Element;
         testElement.setAttribute("rel", "stylesheet");
 
         stylesheetNonceHandler.element(testElement);
@@ -278,7 +284,7 @@ describe("Nonce Handlers", () => {
         const nonce = "NONCE-ABC-123";
         let stylesheetNonceHandler = new StylesheetLinkNonceHandler(nonce);
 
-        let testElement: Element = new MockElement("style");
+        let testElement = new MockElement("style") as Element;
         testElement.setAttribute("rel", "smilesheet");
 
         stylesheetNonceHandler.element(testElement);
@@ -312,29 +318,29 @@ describe("CSP Middleware Factory", () => {
 
 describe('CSP Middleware', () => {
     it('adds the Content-Security-Policy header', async () => {
-        const request = new IncomingRequest('http://example.com', {method: "GET"});
+        const request = new IncomingRequest('https://example.com', {method: "GET"});
         const middleware = getCspMiddleware<ProvidedEnv>();
         const mockContext = createPagesEventContext<typeof middleware>({
             request: request,
             params: {},
             data: {},
-            next: (init) : Response => {
+            next: (_init): Response => {
                 console.log("mockContext: next")
-                return new Response("OK", {status :200});
+                return new Response("OK", {status: 200});
             }
-        } );
+        });
         const response = await middleware(mockContext);
         await waitOnExecutionContext(mockContext);
         const actualCsp = response.headers.get("content-security-policy");
         expect(actualCsp).toBeTruthy();
     });
     it('accepts a nonce callback', async () => {
-        const request = new IncomingRequest('http://example.com', {method: "GET"});
-        const cspOptions : CspOptions = {
+        const request = new IncomingRequest('https://example.com', {method: "GET"});
+        const cspOptions: CspOptions = {
             nonce: {
                 callback: (nonce: string) => {
-                    return async (context) => {
-                        return new Response(`${nonce}`, {status :200});
+                    return async (_context) => {
+                        return new Response(`${nonce}`, {status: 200});
                     }
                 }
             }
@@ -344,14 +350,14 @@ describe('CSP Middleware', () => {
             request: request,
             params: {},
             data: {},
-            next: (req: Request) : Response => {
-                return new Response("MOCK NEXT BODY", {status :200});
+            next: (_req: Request): Response => {
+                return new Response("MOCK NEXT BODY", {status: 200});
             }
         });
         const response = await middleware(mockContext);
         const actualCsp = response.headers.get("content-security-policy");
         expect(actualCsp).toBeTruthy();
-        const noncePattern = /\'nonce\-([a-zA-Z0-9]+)\'/g;
+        const noncePattern = /'nonce-([a-zA-Z0-9]+)'/g;
         const matches = actualCsp.matchAll(noncePattern);
         let groups = [...matches].map(m => m[1]);
         let cspNonce: string = groups[1];

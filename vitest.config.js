@@ -13,6 +13,9 @@ export default defineWorkersConfig({
             './test/**/*.spec.ts',
             './test/**/*.test.ts'
         ],
+        exclude: [
+            "node_modules/**"
+        ],
 
         poolOptions: {
             workers: {
@@ -29,6 +32,7 @@ export default defineWorkersConfig({
         }
     },
     build: {
+        tsconfig: "test/tsconfig.json",
         sourcemap: true
-    }
+    },
 });

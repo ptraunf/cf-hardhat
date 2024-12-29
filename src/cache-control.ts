@@ -4,8 +4,6 @@ import {
     ResolvedCollection
 } from "./common";
 
-import {PagesFunction} from "@cloudflare/workers-types"
-
 enum CacheControlDirective {
     maxAge = 'max-age',
     sMaxage = 's-maxage',
@@ -39,7 +37,7 @@ export class CacheControlHeader {
    }
    toString(): string {
        const flags = Object.keys(this.flags).filter((k) => this.flags[k]);
-       const directivesWithArgs = Object.keys(this.directives).map((k) => {console.log(`${k}`); return `${k}=${this.directives[k]}`});
+       const directivesWithArgs = Object.keys(this.directives).map((k) => {return `${k}=${this.directives[k]}`});
        return `${[...flags, ...directivesWithArgs].join(", ")}`;
    }
 }
