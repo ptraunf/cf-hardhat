@@ -1,6 +1,6 @@
 {
   "name": "cf-hardhat",
-  "version": "0.2.3",
+  "version": "1.0.0",
   "repository": "https://github.com/ptraunf/cf-hardhat",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,11 +25,18 @@
   "author": "Peter Traunfeld",
   "description": "HTTP security middleware to protect serverless Workers and Functions",
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.5.32",
-    "@cloudflare/workers-types": "^4.20241127.0",
+    "@cloudflare/vitest-plugin": "1.1.13",
+    "@cloudflare/workers-types": "5.20260920.1",
     "@types/node": "^22.5.0",
     "csp_evaluator": "^1.1.2",
     "typescript": "^5.5.4",
-    "vitest": "^2.1.6"
+    "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "sharp": "0.35.4"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "workerd@1.20260918.1": true
   }
 }

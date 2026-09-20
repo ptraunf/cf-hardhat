@@ -378,14 +378,14 @@ describe('CSP Middleware', () => {
                     {
                         status: 200,
                         headers: {
-                            "content-type": expectedContentType,
+                            "Content-Type": expectedContentType,
                         }
                     });
             }
         });
         const response = await middleware(mockContext);
         await waitOnExecutionContext(mockContext);
-        const actualContentType = response.headers.get("content-type");
+        const actualContentType = response.headers.get("Content-Type");
         expect(actualContentType).toEqual(expectedContentType)
 
     });

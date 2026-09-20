@@ -4,8 +4,8 @@
     "declarationMap": true,
     "sourceMap": true,
     "types": [
-      "@cloudflare/workers-types/experimental",
-      "@cloudflare/vitest-pool-workers",
+      "@cloudflare/workers-types",
+      "@cloudflare/vitest-plugin",
     ],
     "skipLibCheck": true
   },
